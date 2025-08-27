@@ -6,8 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter() *gin.Engine {
+func InitRouter(handlers *Handlers) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(handlers.authMiddleware)
 
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -15,10 +17,13 @@ func InitRouter() *gin.Engine {
 		})
 	})
 
+	router.POST("/api/singup", handlers.singUp)
+	router.POST("/api/singin", handlers.singIn)
+
 	return router
 }
 
-func StartApplication(addr string) {
-	router := InitRouter()
+func StartApplication(addr string, handlers *Handlers) {
+	router := InitRouter(handlers)
 	router.Run(addr)
 }

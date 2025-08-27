@@ -18,14 +18,16 @@ var (
 )
 
 type ServiceJWT struct {
+	privateKey     *rsa.PrivateKey
 	publicKey      *rsa.PublicKey
 	RefreshTimeExp time.Duration
 	AccessTimeExp  time.Duration
 }
 
-func NewServiceJWT(publicKey *rsa.PublicKey,
+func NewServiceJWT(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey,
 	refreshTimeExp time.Duration, accessTimeExp time.Duration) *ServiceJWT {
 	return &ServiceJWT{
+		privateKey:     privateKey,
 		publicKey:      publicKey,
 		RefreshTimeExp: refreshTimeExp,
 		AccessTimeExp:  accessTimeExp,
@@ -53,9 +55,9 @@ func (j *ServiceJWT) DecodeKey(tokenString string) (*jwt.RegisteredClaims, error
 	return nil, ErrorInvalidToken
 }
 
-func (j *ServiceJWT) Encode(claims jwt.Claims, privetToken *rsa.PrivateKey) (string, error) {
+func (j *ServiceJWT) Encode(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	tokenString, err := token.SignedString(privetToken)
+	tokenString, err := token.SignedString(j.privateKey)
 	if err != nil {
 		return "", fmt.Errorf("failed create token: %v", err)
 	}

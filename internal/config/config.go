@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	Postgres
+	*Postgres
 }
 
 type Postgres struct {
@@ -12,4 +12,20 @@ type Postgres struct {
 	Password string `env:"PG_PASS"`
 	MaxConn  int32  `env:"PG_MAXCONN"`
 	MinConn  int32  `env:"PG_MINCONN"`
+}
+
+func NewConfig() *Config {
+
+	pg := Postgres{}
+	pg.Host = "82.202.169.245"
+	pg.Port = 5432
+	pg.User = "admin"
+	pg.Password = "1234"
+	pg.Database = "sobaki"
+	pg.MaxConn = 10
+	pg.MinConn = 5
+
+	return &Config{
+		Postgres: &pg,
+	}
 }

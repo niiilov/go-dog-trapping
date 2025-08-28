@@ -1,13 +1,20 @@
 package main
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/niiilov/go-dog-trapping/internal/application"
+	"github.com/niiilov/go-dog-trapping/internal/config"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
+	"github.com/niiilov/go-dog-trapping/internal/repository"
 	"github.com/niiilov/go-dog-trapping/internal/service"
 	"github.com/niiilov/go-dog-trapping/pkg/jwt"
+	"github.com/niiilov/go-dog-trapping/pkg/postgres"
 )
 
 func main() {
+	ctx := context.Background()
 
 	privateKey, err := jwt.LoadPrivateKey("./certs/private.pem")
 	if err != nil {
@@ -21,9 +28,20 @@ func main() {
 		//логирование
 	}
 
+	config := config.NewConfig()
+
 	jwtService := jwt.NewServiceJWT(privateKey, publicKey, dto.RefreshTimeExpr, dto.AccesTimeExpr)
 
-	service := service.New()
+	pg, err := postgres.NewPostgres(ctx, config.Postgres)
+	if err != nil {
+
+		//логирование
+	}
+	fmt.Println(pg.Ping(ctx))
+
+	repo := repository.New(pg)
+
+	service := service.New(repo)
 
 	handlers := application.NewHandlers(service, jwtService)
 

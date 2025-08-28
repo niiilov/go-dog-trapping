@@ -1,19 +1,19 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
 	jw "github.com/niiilov/go-dog-trapping/pkg/jwt"
 )
 
 type Service interface {
-	CreateAccount(account *dto.Account, uuid string) error
+	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.Account) (id string, err error)
 }
 type Handlers struct {
@@ -27,13 +27,16 @@ func NewHandlers(service Service, jwtService *jw.ServiceJWT) *Handlers {
 }
 
 func (h *Handlers) singIn(c *gin.Context) {
+	fmt.Println("сигнин")
 	var reqStruct dto.Account
 	if err := c.Bind(&reqStruct); err != nil {
 		//логи
+		fmt.Println(err)
 	}
 	id, err := h.service.ValidateAccount(&reqStruct)
 	if err != nil {
 		//логи
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, `{"status": "error","message": "Ошибка в данных запроса."}`)
 		return
 	}
@@ -56,20 +59,20 @@ func (h *Handlers) singUp(c *gin.Context) {
 		//логи
 	}
 
-	id := uuid.New().String()
-
-	err := h.service.CreateAccount(&reqStruct, id)
+	id, err := h.service.CreateAccount(&reqStruct)
 
 	if err != nil {
 		// опять логи
 
 		c.JSON(http.StatusBadRequest, `{"status": "error","message": "Ошибка в данных запроса."}`)
+		return
 	}
 
 	err = h.SetNewToken(c, id)
 	if err != nil {
 		//логиии
 		c.JSON(http.StatusInternalServerError, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, `{"status": "ok","message": "я хз какой ответ какой json и ответ тут посылать."}`)

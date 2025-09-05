@@ -8,7 +8,7 @@ import (
 )
 
 func (h *Handlers) authMiddleware(c *gin.Context) {
-	if c.Request.URL.Path == "/api/singup" || c.Request.URL.Path == "/api/singin" {
+	if c.Request.URL.Path == "/api/singup" || c.Request.URL.Path == "/api/singin" || c.Request.URL.Path == "/api/send_request" || c.Request.URL.Path == "/api/requests" {
 		c.Next()
 		return
 	}

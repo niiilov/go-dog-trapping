@@ -15,6 +15,8 @@ import (
 type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.Account) (id string, err error)
+	SendRequest(request *dto.RequestFull) error
+	GetRequests() ([]*dto.RequestFull, error)
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -27,7 +29,7 @@ func NewHandlers(service Service, jwtService *jw.ServiceJWT) *Handlers {
 }
 
 func (h *Handlers) singIn(c *gin.Context) {
-	fmt.Println("сигнин")
+
 	var reqStruct dto.Account
 	if err := c.Bind(&reqStruct); err != nil {
 		//логи
@@ -79,6 +81,39 @@ func (h *Handlers) singUp(c *gin.Context) {
 
 }
 
+func (h *Handlers) SendRequest(c *gin.Context) {
+
+	var reqStruct dto.RequestFull
+	if err := c.Bind(&reqStruct); err != nil {
+		//логи
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, `{"status": "error","message": "Ошибка в данных запроса."}`)
+		return
+	}
+
+	err := h.service.SendRequest(&reqStruct)
+	if err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, `{"status": "error","message": "Ошибка при отправке запроса."}`)
+		return
+	}
+
+	c.JSON(http.StatusOK, `{"status": "ok","message": "Запрос успешно отправлен."}`)
+}
+
+func (h *Handlers) GetRequests(c *gin.Context) {
+	requests, err := h.service.GetRequests()
+	if err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, `{"status": "error","message": "Ошибка при получении запросов."}`)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
+}
+
+// ниже функции для работы с jwt и тп не используются для роутинга
 func (h *Handlers) getIdFromSubject(c *gin.Context) (string, error) {
 
 	authHeader := c.Request.Header.Get("Authorization")

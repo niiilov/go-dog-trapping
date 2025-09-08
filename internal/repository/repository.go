@@ -82,7 +82,54 @@ func (r *Repository) SendRequest(request *dto.RequestFull) error {
 	return nil
 }
 
-func (r *Repository) GetRequests() ([]*dto.RequestFull, error) {
+func (r *Repository) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error) {
+	query := sq.Select("requests.id, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
+		From("requests").
+		InnerJoin("request_sources ON requests.source_id = request_sources.id").
+		InnerJoin("applicants ON requests.applicant_id = applicants.id").
+		Where(sq.Eq{"requests.source_id": otdel_id}).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+
+		return nil, err
+	}
+
+	rows, err := r.pg.Query(context.Background(), sql, args...)
+	if err != nil {
+		fmt.Println("Error querying requests:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var requests []*dto.RequestFull
+	for rows.Next() {
+		var req dto.RequestFull
+
+		err := rows.Scan(
+			&req.ID,
+			&req.Source.ID, &req.Applicant.ID,
+			&req.Address,
+			&req.DogsCount,
+			&req.Behavior, &req.Urgency, &req.ContactPerson, &req.Status, &req.CreatedAt,
+			&req.Source.Name, &req.Applicant.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(err)
+		requests = append(requests, &req)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return requests, nil
+
+}
+
+func (r *Repository) GetAllRequests() ([]*dto.RequestFull, error) {
 	query := sq.Select("requests.id, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
 		From("requests").
 		InnerJoin("request_sources ON requests.source_id = request_sources.id").

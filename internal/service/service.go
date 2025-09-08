@@ -20,7 +20,8 @@ type repository interface {
 	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.Account) (id string, hashPass string, err error)
 	SendRequest(request *dto.RequestFull) error
-	GetRequests() ([]*dto.RequestFull, error)
+	GetAllRequests() ([]*dto.RequestFull, error)
+	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
 }
 type Service struct {
 	repository repository
@@ -79,8 +80,16 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 	return nil
 }
 
-func (s *Service) GetRequests() ([]*dto.RequestFull, error) {
-	requests, err := s.repository.GetRequests()
+func (s *Service) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error) {
+	requests, err := s.repository.GetRequestsByOtdel(otdel_id)
+	if err != nil {
+		return nil, err
+	}
+	return requests, nil
+}
+
+func (s *Service) GetAllRequests() ([]*dto.RequestFull, error) {
+	requests, err := s.repository.GetAllRequests()
 	if err != nil {
 		return nil, err
 	}

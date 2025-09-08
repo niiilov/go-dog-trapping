@@ -16,7 +16,8 @@ type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.Account) (id string, err error)
 	SendRequest(request *dto.RequestFull) error
-	GetRequests() ([]*dto.RequestFull, error)
+	GetAllRequests() ([]*dto.RequestFull, error)
+	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -102,14 +103,33 @@ func (h *Handlers) SendRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, `{"status": "ok","message": "Запрос успешно отправлен."}`)
 }
 
-func (h *Handlers) GetRequests(c *gin.Context) {
-	requests, err := h.service.GetRequests()
+func (h *Handlers) GetAllRequests(c *gin.Context) {
+	requests, err := h.service.GetAllRequests()
 	if err != nil {
 		// опять логи
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, `{"status": "error","message": "Ошибка при получении запросов."}`)
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
+}
+
+func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
+	otdel_id := c.Query("otdel_id")
+	if otdel_id == "" {
+		c.JSON(http.StatusBadRequest, `{"status": "error","message": "Ошибка в данных запроса."}`)
+		return
+	}
+	fmt.Println("Otdel ID:", otdel_id)
+	requests, err := h.service.GetRequestsByOtdel(otdel_id)
+
+	if err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, `{"status": "error","message": "Ошибка при получении запросов."}`)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
 }
 

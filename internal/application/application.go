@@ -20,7 +20,8 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.POST("/api/singup", handlers.singUp)
 	router.POST("/api/singin", handlers.singIn)
 	router.POST("/api/send_request", handlers.SendRequest)
-	router.GET("/api/requests", handlers.GetRequests)
+	router.GET("/api/all_requests", handlers.GetAllRequests)
+	router.GET("/api/requests_otdel", handlers.GetRequestsByOtdel)
 
 	return router
 }

@@ -17,16 +17,16 @@ type Account struct {
 
 //Общая структура для заявки
 type RequestFull struct {
-	ID            string     `json:"id"`
-	Source        Source     `json:"source"`
-	Applicant     *Applicant `json:"applicant,omitempty"`
-	Address       string     `json:"address"`
-	DogsCount     int        `json:"dogs_count"`
-	Behavior      string     `json:"behavior"`
-	Urgency       string     `json:"urgency"` //срочность
-	ContactPerson string     `json:"contact_person"`
-	Status        string     `json:"status"`
-	CreatedAt     time.Time  `json:"created_at"`
+	ID            string    `json:"id"`
+	Source        Source    `json:"source"`
+	Applicant     Applicant `json:"applicant,omitempty"`
+	Address       string    `json:"address"`
+	DogsCount     int       `json:"dogs_count"`
+	Behavior      string    `json:"behavior"`
+	Urgency       string    `json:"urgency"` //срочность
+	ContactPerson string    `json:"contact_person"`
+	Status        string    `json:"status"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type Source struct {

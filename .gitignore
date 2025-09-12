@@ -31,3 +31,6 @@ go.work.sum
 # .idea/
 # .vscode/
 zayavka.docx
+migrator.go
+migrations/000001_init.down.sql
+migrations/000001_init.up.sql

@@ -3,7 +3,6 @@ package application
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -124,7 +123,7 @@ func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
 	requests, err := h.service.GetRequestsByOtdel(otdel_id)
 
 	if err != nil {
-		// опять логи
+
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, `{"status": "error","message": "Ошибка при получении запросов."}`)
 		return
@@ -133,25 +132,25 @@ func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
 }
 
-// ниже функции для работы с jwt и тп не используются для роутинга
-func (h *Handlers) getIdFromSubject(c *gin.Context) (string, error) {
+// // ниже функции для работы с jwt и тп не используются для роутинга
+// func (h *Handlers) getIdFromSubject(c *gin.Context) (string, error) {
 
-	authHeader := c.Request.Header.Get("Authorization")
+// 	authHeader := c.Request.Header.Get("Authorization")
 
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+// 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-	token, err := h.jwtService.DecodeKey(tokenString)
-	if err != nil {
+// 	token, err := h.jwtService.DecodeKey(tokenString)
+// 	if err != nil {
 
-		return "", err
-	}
+// 		return "", err
+// 	}
 
-	id, err := token.GetSubject()
-	if err != nil {
-		return "", err
-	}
-	return id, nil
-}
+// 	id, err := token.GetSubject()
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return id, nil
+// }
 
 func (h *Handlers) SetNewToken(c *gin.Context, id string) error {
 

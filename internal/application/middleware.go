@@ -1,51 +1,50 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handlers) authMiddleware(c *gin.Context) {
-	if c.Request.URL.Path == "/api/singup" || c.Request.URL.Path == "/api/singin" || c.Request.URL.Path == "/api/send_request" || c.Request.URL.Path == "/api/all_requests" || c.Request.URL.Path == "/api/requests_otdel" {
+	if c.Request.URL.Path == "/api/auth/singup" || c.Request.URL.Path == "/api/auth/singin" || c.Request.URL.Path == "/api/auth/refresh" {
 		c.Next()
 		return
 	}
-	accessToken, err := c.Cookie("access_token")
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, `{"status": "error","message": "Необходима авторизация."}`)
+	authHeader := c.GetHeader("Authorization")
+
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
 		c.Abort()
 		return
 	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		c.AbortWithStatusJSON(401, gin.H{"error": "Invalid authorization header format"})
+		return
+	}
+
+	accessToken := parts[1]
+
 	claims, err := h.jwtService.DecodeKey(accessToken)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, `{"status": "error","message": "Необходима авторизация."}`)
+		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
 		c.Abort()
 		return
 	}
 
 	if claims.ExpiresAt.Time.Before(time.Now()) {
-		refreshToken, err := c.Cookie("refresh_token")
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, `{"status": "error","message": "Необходима авторизация."}`)
-			c.Abort()
-			return
-		}
-		claims, err := h.jwtService.DecodeKey(refreshToken)
-
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, `{"status": "error","message": "Необходима авторизация."}`)
-			c.Abort()
-			return
-		}
-		if claims.ExpiresAt.Time.Before(time.Now()) {
-			c.JSON(http.StatusUnauthorized, `{"status": "error","message": "Токен обновления истек."}`)
-			c.Abort()
-			return
-		}
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Срок действия токена истек."})
+		c.Abort()
+		return
 	}
+
 	c.Next()
 
 }

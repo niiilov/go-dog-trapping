@@ -13,6 +13,17 @@ import (
 	"github.com/niiilov/go-dog-trapping/pkg/postgres"
 )
 
+// @title Go Dog Trapping API
+// @version 1.0
+// @description API сервиса для отлова бродячих собак.
+
+// @host localhost:8091
+// @BasePath /api
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 func main() {
 	ctx := context.Background()
 

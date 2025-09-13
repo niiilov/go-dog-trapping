@@ -10,14 +10,28 @@ import (
 	"github.com/niiilov/go-dog-trapping/internal/dto"
 )
 
+// @Summary Sign In
+// @Description Авторизация пользователя.
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param account body dto.AuthCredentials true "Account credentials"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/sign-in [post]
 func (h *Handlers) singIn(c *gin.Context) {
 
-	var reqStruct dto.Account
-	if err := c.Bind(&reqStruct); err != nil {
+	var cred dto.AuthCredentials
+	if err := c.Bind(&cred); err != nil {
 		//логи
 		fmt.Println(err)
 	}
-	id, err := h.service.ValidateAccount(&reqStruct)
+	reqStruct := &dto.Account{
+		Login:    cred.Login,
+		Password: cred.Password,
+	}
+	id, err := h.service.ValidateAccount(reqStruct)
 	if err != nil {
 		//логи
 		fmt.Println(err)
@@ -36,6 +50,16 @@ func (h *Handlers) singIn(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Успешный вход."})
 }
 
+// @Summary Sign Up
+// @Description Регистрация нового пользователя.
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param account body dto.Account true "Account information"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/sign-up [post]
 func (h *Handlers) singUp(c *gin.Context) {
 
 	var reqStruct dto.Account
@@ -63,7 +87,14 @@ func (h *Handlers) singUp(c *gin.Context) {
 
 }
 
-// эендпойнт дял рефреша
+// @Summary Refresh Token
+// @Description Обновление токенов доступа и обновления. Если access токен истёк то делаешь get запрос без body с куками и получаешь новые токены в куках.
+// @Tags Auth
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/refresh [get]
 func (h *Handlers) Refresh(c *gin.Context) {
 
 	refreshToken, err := c.Cookie("refresh_token")

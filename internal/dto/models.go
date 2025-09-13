@@ -15,6 +15,11 @@ type Account struct {
 	Password string `json:"password"`
 }
 
+type AuthCredentials struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
 //Общая структура для заявки
 type RequestFull struct {
 	ID            string    `json:"id"`
@@ -31,10 +36,10 @@ type RequestFull struct {
 
 type Source struct {
 	ID   string `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }
 
 type Applicant struct {
 	ID   string `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }

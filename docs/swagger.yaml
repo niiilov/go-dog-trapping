@@ -1,0 +1,271 @@
+basePath: /api
+definitions:
+  dto.Account:
+    properties:
+      full_name:
+        type: string
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  dto.Applicant:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.AuthCredentials:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.RequestFull:
+    properties:
+      address:
+        type: string
+      applicant:
+        $ref: '#/definitions/dto.Applicant'
+      behavior:
+        type: string
+      contact_person:
+        type: string
+      created_at:
+        type: string
+      dogs_count:
+        type: integer
+      id:
+        type: string
+      source:
+        $ref: '#/definitions/dto.Source'
+      status:
+        type: string
+      urgency:
+        description: срочность
+        type: string
+    type: object
+  dto.Source:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+host: localhost:8091
+info:
+  contact: {}
+  description: API сервиса для отлова бродячих собак.
+  title: Go Dog Trapping API
+  version: "1.0"
+paths:
+  /auth/refresh:
+    get:
+      description: Обновление токенов доступа и обновления. Если access токен истёк
+        то делаешь get запрос без body с куками и получаешь новые токены в куках.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Refresh Token
+      tags:
+      - Auth
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация пользователя.
+      parameters:
+      - description: Account credentials
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuthCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sign In
+      tags:
+      - Auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Регистрация нового пользователя.
+      parameters:
+      - description: Account information
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Account'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sign Up
+      tags:
+      - Auth
+  /requests:
+    get:
+      description: Получение всех запросов на отлов бродячих собак. Доступно только
+        для районных администраторов.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.RequestFull'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get All Requests
+      tags:
+      - Requests
+    post:
+      consumes:
+      - application/json
+      description: Отправка запроса на отлов бродячей собаки. Поля source_id и applicant_id
+        заполнять ID из справочников. Поля name в этих полях игнорируются при отправке
+        запроса. Доступно для всех авторизованных пользователей.
+      parameters:
+      - description: Request information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestFull'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Send Request
+      tags:
+      - Requests
+  /requests_otdel:
+    get:
+      description: Получение запросов на отлов бродячих собак по отделу. Требуется
+        параметр otdel_id в query, otdel_id находится в справочнике. Доступно только
+        для районных администраторов.
+      parameters:
+      - description: Otdel ID
+        in: query
+        name: otdel_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.RequestFull'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get Requests By Otdel
+      tags:
+      - Requests
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -26,6 +26,17 @@ func NewHandlers(service Service, jwtService *jw.ServiceJWT) *Handlers {
 	return &Handlers{service: service, jwtService: jwtService}
 }
 
+// @Summary Send Request
+// @Security BearerAuth
+// @Description Отправка запроса на отлов бродячей собаки. Поля source_id и applicant_id заполнять ID из справочников. Поля name в этих полях игнорируются при отправке запроса. Доступно для всех авторизованных пользователей.
+// @Tags Requests
+// @Accept json
+// @Produce json
+// @Param request body dto.RequestFull true "Request information"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /requests [post]
 func (h *Handlers) SendRequest(c *gin.Context) {
 
 	var reqStruct dto.RequestFull
@@ -47,6 +58,14 @@ func (h *Handlers) SendRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Запрос успешно отправлен"})
 }
 
+// @Summary Get All Requests
+// @Security BearerAuth
+// @Description Получение всех запросов на отлов бродячих собак. Доступно только для районных администраторов.
+// @Tags Requests
+// @Produce json
+// @Success 200 {object} []dto.RequestFull
+// @Failure 500 {object} map[string]string
+// @Router /requests [get]
 func (h *Handlers) GetAllRequests(c *gin.Context) {
 	requests, err := h.service.GetAllRequests()
 	if err != nil {
@@ -58,6 +77,16 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
 }
 
+// @Summary Get Requests By Otdel
+// @Security BearerAuth
+// @Description Получение запросов на отлов бродячих собак по отделу. Требуется параметр otdel_id в query, otdel_id находится в справочнике. Доступно только для районных администраторов.
+// @Tags Requests
+// @Produce json
+// @Param otdel_id query string true "Otdel ID"
+// @Success 200 {object} []dto.RequestFull
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /requests_otdel [get]
 func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
 	otdel_id := c.Query("otdel_id")
 	if otdel_id == "" {

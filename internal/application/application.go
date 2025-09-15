@@ -24,6 +24,7 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.GET("/api/auth/refresh", handlers.Refresh)
 	router.GET("/api/requests", handlers.GetAllRequests)
 	router.GET("/api/requests_otdel", handlers.GetRequestsByOtdel)
+	router.POST("/api/auth/change-password", handlers.ChangePassword)
 
 	return router
 }

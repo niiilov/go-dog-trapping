@@ -25,6 +25,15 @@ definitions:
       password:
         type: string
     type: object
+  dto.ChangePasswordRequest:
+    properties:
+      login:
+        type: string
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
   dto.RequestFull:
     properties:
       address:
@@ -63,6 +72,44 @@ info:
   title: Go Dog Trapping API
   version: "1.0"
 paths:
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Смена пароля пользователя.
+      parameters:
+      - description: Change Password information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change Password
+      tags:
+      - Auth
   /auth/refresh:
     get:
       description: Обновление токенов доступа и обновления. Если access токен истёк

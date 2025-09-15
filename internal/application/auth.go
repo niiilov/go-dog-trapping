@@ -27,7 +27,7 @@ func (h *Handlers) singIn(c *gin.Context) {
 		//логи
 		fmt.Println(err)
 	}
-	reqStruct := &dto.Account{
+	reqStruct := &dto.AuthCredentials{
 		Login:    cred.Login,
 		Password: cred.Password,
 	}
@@ -83,7 +83,7 @@ func (h *Handlers) singUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "я хз какой ответ какой json и ответ тут посылать."})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Аккаунт успешно создан."})
 
 }
 
@@ -124,6 +124,40 @@ func (h *Handlers) Refresh(c *gin.Context) {
 	}
 
 	h.SetNewToken(c, id)
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Токены обновлены."})
+
+}
+
+// @Summary Change Password
+// @Description Смена пароля пользователя.
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body dto.ChangePasswordRequest true "Change Password information"
+// @Security BearerAuth
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/change-password [post]
+func (h *Handlers) ChangePassword(c *gin.Context) {
+	var reqStruct dto.ChangePasswordRequest
+	if err := c.Bind(&reqStruct); err != nil {
+		//логи
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+
+	err := h.service.ChangePassword(&reqStruct)
+	if err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при смене пароля."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Пароль успешно изменен."})
 
 }
 

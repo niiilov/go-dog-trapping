@@ -2,8 +2,10 @@ package service
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/niiilov/go-dog-trapping/internal/dto"
+	"github.com/niiilov/go-dog-trapping/internal/worker"
 	"github.com/niiilov/go-dog-trapping/pkg/security"
 	validate "github.com/niiilov/go-dog-trapping/pkg/validator"
 )
@@ -18,10 +20,11 @@ var (
 
 type repository interface {
 	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.Account) (id string, hashPass string, err error)
-	SendRequest(request *dto.RequestFull) error
+	ValidateAccount(account *dto.AuthCredentials) (id string, hashPass string, err error)
+	SendRequest(request *dto.RequestFull) (int, error)
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
+	ChangePassword(req *dto.ChangePasswordRequest) error
 }
 type Service struct {
 	repository repository
@@ -48,7 +51,7 @@ func (s *Service) CreateAccount(account *dto.Account) (string, error) {
 
 	return s.repository.CreateAccount(account)
 }
-func (s *Service) ValidateAccount(account *dto.Account) (string, error) {
+func (s *Service) ValidateAccount(account *dto.AuthCredentials) (string, error) {
 
 	err := validate.Validate(account)
 	if err != nil {
@@ -73,7 +76,26 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 		return ErrInvalidData
 	}
 
-	if err := s.repository.SendRequest(request); err != nil {
+	number, err := s.repository.SendRequest(request)
+	if err != nil {
+		return err
+	}
+
+	if number == 0 {
+		return ErrInvalidData
+	}
+	reqData := &dto.RequestForGenerating{
+		Number:        strconv.Itoa(number),
+		Applicant:     request.Applicant.Name,
+		Source:        request.Source.Name,
+		Address:       request.Address,
+		DogsCount:     request.DogsCount,
+		Behavior:      request.Behavior,
+		Urgency:       request.Urgency,
+		ContactPerson: request.ContactPerson,
+	}
+
+	if err = worker.SendRequestForGenerating(reqData); err != nil {
 		return err
 	}
 
@@ -94,4 +116,29 @@ func (s *Service) GetAllRequests() ([]*dto.RequestFull, error) {
 		return nil, err
 	}
 	return requests, nil
+}
+
+func (s *Service) ChangePassword(req *dto.ChangePasswordRequest) error {
+	var valid dto.AuthCredentials
+
+	valid.Login = req.Login
+	valid.Password = req.OldPassword
+
+	_, hashPass, err := s.repository.ValidateAccount(&valid)
+	if err != nil {
+		return ErrInvalidData
+	}
+	if !security.Check(valid.Password, hashPass) {
+		return ErrInvalidPassword
+	}
+
+	req.NewPassword, err = security.Encode(req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	err = s.repository.ChangePassword(req)
+
+	return err
+
 }

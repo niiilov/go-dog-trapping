@@ -15,9 +15,16 @@ type Account struct {
 	Password string `json:"password"`
 }
 
+//структура для авторизации
 type AuthCredentials struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
+}
+
+type ChangePasswordRequest struct {
+	Login       string `json:"login"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }
 
 //Общая структура для заявки
@@ -42,4 +49,15 @@ type Source struct {
 type Applicant struct {
 	ID   string `json:"id"`
 	Name string `json:"name,omitempty"`
+}
+
+type RequestForGenerating struct {
+	Number        string `json:"number"`
+	Applicant     string `json:"applicant_name"`
+	Source        string `json:"source_name"`
+	Address       string `json:"address"`
+	DogsCount     int    `json:"dogs_count"`
+	Behavior      string `json:"behavior"`
+	Urgency       string `json:"urgency"` //срочность
+	ContactPerson string `json:"contact_person"`
 }

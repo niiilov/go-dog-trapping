@@ -11,10 +11,11 @@ import (
 
 type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.Account) (id string, err error)
+	ValidateAccount(account *dto.AuthCredentials) (id string, err error)
 	SendRequest(request *dto.RequestFull) error
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
+	ChangePassword(req *dto.ChangePasswordRequest) error
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT

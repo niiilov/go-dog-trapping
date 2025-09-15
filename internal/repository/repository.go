@@ -42,7 +42,7 @@ func (r *Repository) CreateAccount(account *dto.Account) (string, error) {
 	return id, nil
 }
 
-func (r *Repository) ValidateAccount(account *dto.Account) (id string, hashPass string, err error) {
+func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (id string, hashPass string, err error) {
 	query := sq.Select("id", "password_hash").
 		From("users").
 		Where(sq.Eq{"login": account.Login}).
@@ -61,25 +61,44 @@ func (r *Repository) ValidateAccount(account *dto.Account) (id string, hashPass 
 	return id, hashPass, nil
 }
 
-func (r *Repository) SendRequest(request *dto.RequestFull) error {
-	fmt.Println("Repo request:", request, "сдесь")
+func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {
+
 	query := sq.Insert("requests").Columns("source_id", "applicant_id", "address", "dogs_count", "behavior", "urgency", "contact_person").
 		Values(request.Source.ID, request.Applicant.ID, request.Address, request.DogsCount, request.Behavior, request.Urgency, request.ContactPerson).
+		Suffix("RETURNING number").
 		PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := query.ToSql()
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return 0, err
 	}
 
-	_, err = r.pg.Exec(context.Background(), sql, args...)
+	var number int
+
+	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&number)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return 0, err
 	}
 
-	return nil
+	selectQuery := sq.Select("applicants.name", "request_sources.name").
+		From("requests").
+		Join("applicants ON requests.applicant_id = applicants.id").
+		Join("request_sources ON requests.source_id = request_sources.id").
+		Where(sq.Eq{"requests.number": number}).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, selectArgs, err := selectQuery.ToSql()
+	if err != nil {
+		return 0, err
+	}
+	err = r.pg.QueryRow(context.Background(), sql, selectArgs...).Scan(&request.Applicant.Name, &request.Source.Name)
+	if err != nil {
+		return 0, err
+	}
+
+	return number, nil
 }
 
 func (r *Repository) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error) {
@@ -172,4 +191,29 @@ func (r *Repository) GetAllRequests() ([]*dto.RequestFull, error) {
 	}
 
 	return requests, nil
+}
+
+func (r *Repository) ChangePassword(req *dto.ChangePasswordRequest) error {
+
+	query := sq.Update("users").
+		Set("password_hash", req.NewPassword).
+		Where(sq.Eq{"login": req.Login}).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("no user found with login: %s", req.Login)
+	}
+
+	return nil
+
 }

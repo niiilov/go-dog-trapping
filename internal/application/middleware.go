@@ -30,6 +30,8 @@ func (h *Handlers) authMiddleware(c *gin.Context) {
 
 	accessToken := parts[1]
 
+	c.Set("access_token", accessToken)
+
 	claims, err := h.jwtService.DecodeKey(accessToken)
 
 	if err != nil {

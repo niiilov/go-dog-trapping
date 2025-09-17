@@ -65,6 +65,15 @@ definitions:
       name:
         type: string
     type: object
+  dto.UserProfile:
+    properties:
+      full_name:
+        type: string
+      login:
+        type: string
+      role:
+        type: string
+    type: object
 host: localhost:8091
 info:
   contact: {}
@@ -135,6 +144,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Refresh Token
       tags:
       - Auth
@@ -310,6 +321,33 @@ paths:
       summary: Get Requests By Otdel
       tags:
       - Requests
+  /user/profile:
+    get:
+      description: Получение профиля пользователя.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserProfile'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get User Profile
+      tags:
+      - User
 securityDefinitions:
   BearerAuth:
     in: header

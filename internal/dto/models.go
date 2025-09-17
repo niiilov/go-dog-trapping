@@ -15,6 +15,12 @@ type Account struct {
 	Password string `json:"password"`
 }
 
+type UserProfile struct {
+	FullName string `json:"full_name"`
+	Login    string `json:"login"`
+	Role     string `json:"role"`
+}
+
 //структура для авторизации
 type AuthCredentials struct {
 	Login    string `json:"login"`

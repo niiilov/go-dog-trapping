@@ -217,3 +217,20 @@ func (r *Repository) ChangePassword(req *dto.ChangePasswordRequest) error {
 	return nil
 
 }
+
+func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
+	query := sq.Select("full_name", "login", "role").
+		From("users").
+		Where(sq.Eq{"id": userId}).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	var profile dto.UserProfile
+	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&profile.FullName, &profile.Login, &profile.Role)
+	if err != nil {
+		return nil, err
+	}
+	return &profile, nil
+}

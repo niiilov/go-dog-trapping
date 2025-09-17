@@ -25,6 +25,7 @@ type repository interface {
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
 	ChangePassword(req *dto.ChangePasswordRequest) error
+	GetUserProfile(userId string) (*dto.UserProfile, error)
 }
 type Service struct {
 	repository repository
@@ -141,4 +142,12 @@ func (s *Service) ChangePassword(req *dto.ChangePasswordRequest) error {
 
 	return err
 
+}
+
+func (s *Service) GetUserProfile(userId string) (*dto.UserProfile, error) {
+	profile, err := s.repository.GetUserProfile(userId)
+	if err != nil {
+		return nil, err
+	}
+	return profile, nil
 }

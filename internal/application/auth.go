@@ -91,6 +91,7 @@ func (h *Handlers) singUp(c *gin.Context) {
 // @Description Обновление токенов доступа и обновления. Если access токен истёк то делаешь get запрос без body с куками и получаешь новые токены в куках.
 // @Tags Auth
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -159,6 +160,50 @@ func (h *Handlers) ChangePassword(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Пароль успешно изменен."})
 
+}
+
+// @Summary Get User Profile
+// @Description Получение профиля пользователя.
+// @Tags User
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} dto.UserProfile
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /user/profile [get]
+func (h *Handlers) Profile(c *gin.Context) {
+
+	token := c.Value("access_token").(string)
+	claims, err := h.jwtService.DecodeKey(token)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
+		c.Abort()
+		return
+	}
+	if claims.ExpiresAt.Time.Before(time.Now()) {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Токен обновления истек."})
+		c.Abort()
+		return
+	}
+
+	userId, err := claims.GetSubject()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "ошибка."})
+		c.Abort()
+		return
+	}
+
+	profile, err := h.service.GetUserProfile(userId)
+	if err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении профиля."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
 }
 
 func (h *Handlers) SetNewToken(c *gin.Context, id string) error {

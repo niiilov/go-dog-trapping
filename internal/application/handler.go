@@ -16,6 +16,7 @@ type Service interface {
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
 	ChangePassword(req *dto.ChangePasswordRequest) error
+	GetUserProfile(userId string) (*dto.UserProfile, error)
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -94,7 +95,7 @@ func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
-	fmt.Println("Otdel ID:", otdel_id)
+
 	requests, err := h.service.GetRequestsByOtdel(otdel_id)
 
 	if err != nil {

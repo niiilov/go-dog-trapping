@@ -8,6 +8,7 @@ import (
 	"github.com/niiilov/go-dog-trapping/internal/config"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
 	"github.com/niiilov/go-dog-trapping/internal/repository"
+	"github.com/niiilov/go-dog-trapping/internal/s3"
 	"github.com/niiilov/go-dog-trapping/internal/service"
 	"github.com/niiilov/go-dog-trapping/pkg/jwt"
 	"github.com/niiilov/go-dog-trapping/pkg/postgres"
@@ -52,7 +53,9 @@ func main() {
 
 	repo := repository.New(pg)
 
-	service := service.New(repo)
+	storage := s3.New()
+
+	service := service.New(repo, storage)
 
 	handlers := application.NewHandlers(service, jwtService)
 

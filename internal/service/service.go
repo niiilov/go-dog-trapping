@@ -1,7 +1,9 @@
 package service
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/niiilov/go-dog-trapping/internal/dto"
@@ -27,13 +29,20 @@ type repository interface {
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 }
+
+type storage interface {
+	UploadFile(ctx context.Context, objectKey string, fileName string) error
+	GetFileURL(objectKey string) string
+}
 type Service struct {
 	repository repository
+	storage    storage
 }
 
-func New(repository repository) *Service {
+func New(r repository, s storage) *Service {
 	return &Service{
-		repository: repository,
+		repository: r,
+		storage:    s,
 	}
 }
 
@@ -100,6 +109,14 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 		return err
 	}
 
+	filename := "zayavka_" + strconv.Itoa(number) + ".docx"
+
+	if err = s.storage.UploadFile(context.TODO(), filename, filename); err != nil {
+		//лог
+		fmt.Println("Error upload file to S3:", err)
+		return err
+	}
+
 	return nil
 }
 
@@ -150,4 +167,8 @@ func (s *Service) GetUserProfile(userId string) (*dto.UserProfile, error) {
 		return nil, err
 	}
 	return profile, nil
+}
+
+func (s *Service) GetFileURL(objectKey string) string {
+	return s.storage.GetFileURL(objectKey)
 }

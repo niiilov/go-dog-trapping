@@ -36,6 +36,7 @@ type ChangePasswordRequest struct {
 //Общая структура для заявки
 type RequestFull struct {
 	ID            string    `json:"id"`
+	Number        string    `json:"number"`
 	Source        Source    `json:"source"`
 	Applicant     Applicant `json:"applicant,omitempty"`
 	Address       string    `json:"address"`

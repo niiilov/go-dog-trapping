@@ -17,6 +17,7 @@ type Service interface {
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
+	GetFileURL(objectKey string) string
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -106,4 +107,29 @@ func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
+}
+
+// @Summary Download Request File URL
+// @Security BearerAuth
+// @Description Получение URL для скачивания файла заявки в формате .docx. Требуется параметр number в query, номер заявки. Доступно для всех авторизованных пользователей.
+// @Tags Requests
+// @Produce json
+// @Param number query string true "Request Number"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /requests/download_url [get]
+func (h *Handlers) DowloadUrl(c *gin.Context) {
+	number := c.Query("number")
+	fmt.Println(number)
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+	filename := "zayavka_" + number + ".docx"
+
+	fmt.Println(filename)
+	url := h.service.GetFileURL(filename)
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
 }

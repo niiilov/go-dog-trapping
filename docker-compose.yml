@@ -1,0 +1,35 @@
+services:
+  app:
+    container_name: app
+    env_file:
+      - .env
+    ports:
+      - "8091:8091"
+    restart: on-failure
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    
+
+  worker:
+    container_name: worker
+
+    ports:
+      - "8000:8000"
+    
+    restart: on-failure
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 5s
+    build:
+        context: pkg/zalupa
+        dockerfile: Dockerfile
+        

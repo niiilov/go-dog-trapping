@@ -50,6 +50,8 @@ definitions:
         type: integer
       id:
         type: string
+      number:
+        type: string
       source:
         $ref: '#/definitions/dto.Source'
       status:
@@ -282,6 +284,42 @@ paths:
       security:
       - BearerAuth: []
       summary: Send Request
+      tags:
+      - Requests
+  /requests/download_url:
+    get:
+      description: Получение URL для скачивания файла заявки в формате .docx. Требуется
+        параметр number в query, номер заявки. Доступно для всех авторизованных пользователей.
+      parameters:
+      - description: Request Number
+        in: query
+        name: number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Download Request File URL
       tags:
       - Requests
   /requests_otdel:

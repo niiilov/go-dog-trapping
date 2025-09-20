@@ -53,7 +53,7 @@ func main() {
 
 	repo := repository.New(pg)
 
-	storage := s3.New()
+	storage := s3.New(config.AwsCreds)
 
 	service := service.New(repo, storage)
 

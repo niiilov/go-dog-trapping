@@ -1,7 +1,12 @@
 package config
 
+import (
+	"os"
+)
+
 type Config struct {
 	*Postgres
+	*AwsCreds
 }
 
 type Postgres struct {
@@ -12,6 +17,13 @@ type Postgres struct {
 	Password string `env:"PG_PASS"`
 	MaxConn  int32  `env:"PG_MAXCONN"`
 	MinConn  int32  `env:"PG_MINCONN"`
+}
+
+type AwsCreds struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	Region          string
+	BaseEndpoint    string
 }
 
 func NewConfig() *Config {
@@ -25,7 +37,14 @@ func NewConfig() *Config {
 	pg.MaxConn = 10
 	pg.MinConn = 5
 
+	aws := AwsCreds{}
+	aws.AccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
+	aws.SecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	aws.BaseEndpoint = os.Getenv("AWS_BASE_ENDPOINT")
+	aws.Region = os.Getenv("AWS_REGION")
+
 	return &Config{
 		Postgres: &pg,
+		AwsCreds: &aws,
 	}
 }

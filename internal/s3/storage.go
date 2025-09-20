@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go"
+	creds "github.com/niiilov/go-dog-trapping/internal/config"
 )
 
 type Storage struct {
@@ -19,15 +20,15 @@ type Storage struct {
 	defautlBucket string
 }
 
-func New() *Storage {
+func New(cred *creds.AwsCreds) *Storage {
 
-	// Подгружаем конфигурацию из ~/.aws/*
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatal(err)
+	cfg := aws.Config{
+		Region: cred.Region,
+		Credentials: aws.NewCredentialsCache(
+			credentials.NewStaticCredentialsProvider(cred.AccessKeyID, cred.SecretAccessKey, ""),
+		),
+		BaseEndpoint: &cred.BaseEndpoint,
 	}
-
-	fmt.Println(cfg)
 
 	// Создаем клиента для доступа к хранилищу S3
 	client := s3.NewFromConfig(cfg)

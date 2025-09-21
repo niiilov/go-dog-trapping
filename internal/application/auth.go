@@ -16,9 +16,9 @@ import (
 // @Accept json
 // @Produce json
 // @Param account body dto.AuthCredentials true "Account credentials"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Success 200 {object} dto.Response
+// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response
 // @Router /auth/sign-in [post]
 func (h *Handlers) singIn(c *gin.Context) {
 
@@ -56,9 +56,9 @@ func (h *Handlers) singIn(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param account body dto.Account true "Account information"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Success 200 {object} dto.Response
+// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response
 // @Router /auth/sign-up [post]
 func (h *Handlers) singUp(c *gin.Context) {
 
@@ -92,7 +92,7 @@ func (h *Handlers) singUp(c *gin.Context) {
 // @Tags Auth
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} map[string]string
+// @Success 200 {object} dto.Response
 // @Failure 401 {object} dto.Response
 // @Failure 500 {object} dto.Response
 // @Router /auth/refresh [get]
@@ -137,7 +137,7 @@ func (h *Handlers) Refresh(c *gin.Context) {
 // @Produce json
 // @Param request body dto.ChangePasswordRequest true "Change Password information"
 // @Security BearerAuth
-// @Success 200 {object} map[string]string
+// @Success 200 {object} dto.Response  	 "Пароль успешно изменен."
 // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при cмене  пароля."
 // @Router /auth/change-password [post]

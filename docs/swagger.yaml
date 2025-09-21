@@ -163,11 +163,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Пароль успешно изменен.
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
         "400":
           description: Ошибка в данных запроса.
           schema:
@@ -191,9 +189,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
         "401":
           description: Unauthorized
           schema:
@@ -225,21 +221,15 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
         "400":
-          description: Bad Request
+          description: Ошибка в данных запроса.
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
       summary: Sign In
       tags:
       - Auth
@@ -261,21 +251,15 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
         "400":
-          description: Bad Request
+          description: Ошибка в данных запроса.
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.Response'
       summary: Sign Up
       tags:
       - Auth

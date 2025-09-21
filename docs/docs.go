@@ -55,21 +55,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Ошибка в данных запроса.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка при cмене  пароля.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -103,19 +97,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -248,7 +236,7 @@ const docTemplate = `{
                 "summary": "Get All Requests",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Все заявки",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -257,12 +245,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка при получении запросов.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -297,27 +282,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ok\"\t\"Запрос успешно отправлен",
+                        "description": "Запрос успешно отправлен",
                         "schema": {
-                            "$ref": "#/definitions/dto.SuccessfullyResp"
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Ошибка в данных запроса.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка при отправке запроса",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -351,28 +330,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.ResponseUrl"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Ошибка в данных запроса.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка при получении запросов.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -413,21 +383,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Ошибка в данных запроса.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка при получении запросов.",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -458,19 +422,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -604,6 +562,34 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.Response": {
+            "description": "Структура для ответа с где обычно ок и сообщние",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "просто сообщение",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "обычно ok  при ошибках error",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ResponseUrl": {
+            "description": "Структура для ответа с где обычно ок и url",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "description": "обычно ok  при ошибках error",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "url на скаччивание файла",
+                    "type": "string"
+                }
+            }
+        },
         "dto.Source": {
             "description": "Источник информации от кого был получен запрос. Поле name игнорируется при создании заявки.",
             "type": "object",
@@ -614,18 +600,6 @@ const docTemplate = `{
                 },
                 "name": {
                     "description": "Название источника игнорируется при создании заявки",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.SuccessfullyResp": {
-            "description": "Структура для ответа с где обычно ок и сообщние",
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }

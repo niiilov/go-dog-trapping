@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -12,7 +13,7 @@ type Config struct {
 type Postgres struct {
 	Host     string `env:"PG_HOST"`
 	Port     int    `env:"PG_PORT"`
-	Database string `env:"PGPG_DATABASE_DATA"`
+	Database string `env:"PG_DATABASE"`
 	User     string `env:"PG_USER"`
 	Password string `env:"PG_PASS"`
 	MaxConn  int32  `env:"PG_MAXCONN"`
@@ -29,11 +30,13 @@ type AwsCreds struct {
 func NewConfig() *Config {
 
 	pg := Postgres{}
-	pg.Host = "82.202.169.245"
-	pg.Port = 5432
-	pg.User = "admin"
-	pg.Password = "1234"
-	pg.Database = "sobaki"
+	pg.Host = os.Getenv("PG_HOST")
+	port := os.Getenv("PG_PORT")
+	pg.Port, _ = strconv.Atoi(port)
+
+	pg.User = os.Getenv("PG_USER")
+	pg.Password = os.Getenv("PG_PASS")
+	pg.Database = os.Getenv("PG_DATABASE")
 	pg.MaxConn = 10
 	pg.MinConn = 5
 

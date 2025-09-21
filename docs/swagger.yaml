@@ -1,79 +1,131 @@
 basePath: /api
 definitions:
   dto.Account:
+    description: Структура для создания учетной записи пользователя. Все поля обязательны
+      к заполнению
     properties:
       full_name:
+        description: Полное имя или название организации
         type: string
       login:
+        description: Логин для входа в систему, должен быть уникальным
         type: string
       password:
+        description: Пароль для входа в систему
         type: string
       role:
+        description: Роль пользователя, например, "admin", "user", "otdel" и т.д.
         type: string
     type: object
   dto.Applicant:
+    description: Заявитель. Поле name игнорируется при создании заявки.
     properties:
       id:
+        description: уникальный идентификатор заявителя при Post запросе на создание
+          заявки ОБЯЗАТЕЛЕН
         type: string
       name:
+        description: Название заявителя игнорируется при создании заявки
         type: string
     type: object
   dto.AuthCredentials:
+    description: Структура для авторизации пользователя. Все поля обязательны к заполнению
     properties:
       login:
+        description: Логин для входа в систему, должен быть уникальным
         type: string
       password:
+        description: Пароль для входа в систему
         type: string
     type: object
   dto.ChangePasswordRequest:
+    description: Структура для смены пароля пользователя. Все поля обязательны к заполнению
     properties:
       login:
+        description: Логин для входа в систему, должен быть уникальным
         type: string
       new_password:
+        description: Новый пароль для входа в систему
         type: string
       old_password:
+        description: Старый пароль для входа в систему
         type: string
     type: object
   dto.RequestFull:
+    description: Полная информация о заявке на отлов бродячей собаки. Поля id, number,
+      status и created_at игнорируются при создании заявки.
     properties:
       address:
+        description: Адрес, где была замечена бродячая собака
         type: string
       applicant:
-        $ref: '#/definitions/dto.Applicant'
+        allOf:
+        - $ref: '#/definitions/dto.Applicant'
+        description: Заявитель ID находится в справочнике
       behavior:
+        description: Поведение собаки
         type: string
       contact_person:
+        description: Контактные данные
         type: string
       created_at:
+        description: Дата и время создания заявки генерируется автоматически
         type: string
       dogs_count:
+        description: Количество собак
         type: integer
       id:
+        description: уникальный идентификатор заявки при Post запросе не указывается
         type: string
       number:
+        description: уникальный номер заявки, генерируется автоматически при создании
+          заявки
         type: string
       source:
-        $ref: '#/definitions/dto.Source'
+        allOf:
+        - $ref: '#/definitions/dto.Source'
+        description: Источник информации от кого был получен запрос ID находится в
+          справочнике
       status:
+        description: Статус заявки (новая, в работе, выполнена, отменена) генерируется
+          после создания заявки
         type: string
       urgency:
         description: срочность
         type: string
     type: object
   dto.Source:
+    description: Источник информации от кого был получен запрос. Поле name игнорируется
+      при создании заявки.
     properties:
       id:
+        description: уникальный идентификатор источника при Post запросе на создание
+          заявки ОБЯЗАТЕЛЕН
         type: string
       name:
+        description: Название источника игнорируется при создании заявки
+        type: string
+    type: object
+  dto.SuccessfullyResp:
+    description: Структура для ответа с где обычно ок и сообщние
+    properties:
+      message:
+        type: string
+      status:
         type: string
     type: object
   dto.UserProfile:
+    description: Структура для получения профиля пользователя. Все поля обязательны
+      к заполнению
     properties:
       full_name:
+        description: Полное имя или название организации
         type: string
       login:
+        description: Логин для входа в систему, должен быть уникальным
         type: string
       role:
+        description: Роль пользователя, например, "admin", "user", "otdel" и т.д.
         type: string
     type: object
 host: localhost:8091
@@ -264,11 +316,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: "ok\"\t\"Запрос успешно отправлен"
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.SuccessfullyResp'
         "400":
           description: Bad Request
           schema:

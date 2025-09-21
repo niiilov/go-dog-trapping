@@ -297,12 +297,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "ok\"\t\"Запрос успешно отправлен",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.SuccessfullyResp"
                         }
                     },
                     "400": {
@@ -482,89 +479,123 @@ const docTemplate = `{
     },
     "definitions": {
         "dto.Account": {
+            "description": "Структура для создания учетной записи пользователя. Все поля обязательны к заполнению",
             "type": "object",
             "properties": {
                 "full_name": {
+                    "description": "Полное имя или название организации",
                     "type": "string"
                 },
                 "login": {
+                    "description": "Логин для входа в систему, должен быть уникальным",
                     "type": "string"
                 },
                 "password": {
+                    "description": "Пароль для входа в систему",
                     "type": "string"
                 },
                 "role": {
+                    "description": "Роль пользователя, например, \"admin\", \"user\", \"otdel\" и т.д.",
                     "type": "string"
                 }
             }
         },
         "dto.Applicant": {
+            "description": "Заявитель. Поле name игнорируется при создании заявки.",
             "type": "object",
             "properties": {
                 "id": {
+                    "description": "уникальный идентификатор заявителя при Post запросе на создание заявки ОБЯЗАТЕЛЕН",
                     "type": "string"
                 },
                 "name": {
+                    "description": "Название заявителя игнорируется при создании заявки",
                     "type": "string"
                 }
             }
         },
         "dto.AuthCredentials": {
+            "description": "Структура для авторизации пользователя. Все поля обязательны к заполнению",
             "type": "object",
             "properties": {
                 "login": {
+                    "description": "Логин для входа в систему, должен быть уникальным",
                     "type": "string"
                 },
                 "password": {
+                    "description": "Пароль для входа в систему",
                     "type": "string"
                 }
             }
         },
         "dto.ChangePasswordRequest": {
+            "description": "Структура для смены пароля пользователя. Все поля обязательны к заполнению",
             "type": "object",
             "properties": {
                 "login": {
+                    "description": "Логин для входа в систему, должен быть уникальным",
                     "type": "string"
                 },
                 "new_password": {
+                    "description": "Новый пароль для входа в систему",
                     "type": "string"
                 },
                 "old_password": {
+                    "description": "Старый пароль для входа в систему",
                     "type": "string"
                 }
             }
         },
         "dto.RequestFull": {
+            "description": "Полная информация о заявке на отлов бродячей собаки. Поля id, number, status и created_at игнорируются при создании заявки.",
             "type": "object",
             "properties": {
                 "address": {
+                    "description": "Адрес, где была замечена бродячая собака",
                     "type": "string"
                 },
                 "applicant": {
-                    "$ref": "#/definitions/dto.Applicant"
+                    "description": "Заявитель ID находится в справочнике",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.Applicant"
+                        }
+                    ]
                 },
                 "behavior": {
+                    "description": "Поведение собаки",
                     "type": "string"
                 },
                 "contact_person": {
+                    "description": "Контактные данные",
                     "type": "string"
                 },
                 "created_at": {
+                    "description": "Дата и время создания заявки генерируется автоматически",
                     "type": "string"
                 },
                 "dogs_count": {
+                    "description": "Количество собак",
                     "type": "integer"
                 },
                 "id": {
+                    "description": "уникальный идентификатор заявки при Post запросе не указывается",
                     "type": "string"
                 },
                 "number": {
+                    "description": "уникальный номер заявки, генерируется автоматически при создании заявки",
                     "type": "string"
                 },
                 "source": {
-                    "$ref": "#/definitions/dto.Source"
+                    "description": "Источник информации от кого был получен запрос ID находится в справочнике",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.Source"
+                        }
+                    ]
                 },
                 "status": {
+                    "description": "Статус заявки (новая, в работе, выполнена, отменена) генерируется после создания заявки",
                     "type": "string"
                 },
                 "urgency": {
@@ -574,26 +605,45 @@ const docTemplate = `{
             }
         },
         "dto.Source": {
+            "description": "Источник информации от кого был получен запрос. Поле name игнорируется при создании заявки.",
             "type": "object",
             "properties": {
                 "id": {
+                    "description": "уникальный идентификатор источника при Post запросе на создание заявки ОБЯЗАТЕЛЕН",
                     "type": "string"
                 },
                 "name": {
+                    "description": "Название источника игнорируется при создании заявки",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SuccessfullyResp": {
+            "description": "Структура для ответа с где обычно ок и сообщние",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
         },
         "dto.UserProfile": {
+            "description": "Структура для получения профиля пользователя. Все поля обязательны к заполнению",
             "type": "object",
             "properties": {
                 "full_name": {
+                    "description": "Полное имя или название организации",
                     "type": "string"
                 },
                 "login": {
+                    "description": "Логин для входа в систему, должен быть уникальным",
                     "type": "string"
                 },
                 "role": {
+                    "description": "Роль пользователя, например, \"admin\", \"user\", \"otdel\" и т.д.",
                     "type": "string"
                 }
             }

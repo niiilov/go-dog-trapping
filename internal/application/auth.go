@@ -93,8 +93,8 @@ func (h *Handlers) singUp(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} map[string]string
-// @Failure 401 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Failure 401 {object} dto.Response
+// @Failure 500 {object} dto.Response
 // @Router /auth/refresh [get]
 func (h *Handlers) Refresh(c *gin.Context) {
 
@@ -138,8 +138,8 @@ func (h *Handlers) Refresh(c *gin.Context) {
 // @Param request body dto.ChangePasswordRequest true "Change Password information"
 // @Security BearerAuth
 // @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при cмене  пароля."
 // @Router /auth/change-password [post]
 func (h *Handlers) ChangePassword(c *gin.Context) {
 	var reqStruct dto.ChangePasswordRequest
@@ -168,8 +168,8 @@ func (h *Handlers) ChangePassword(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} dto.UserProfile
-// @Failure 401 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Failure 401 {object} dto.Response
+// @Failure 500 {object} dto.Response
 // @Router /user/profile [get]
 func (h *Handlers) Profile(c *gin.Context) {
 

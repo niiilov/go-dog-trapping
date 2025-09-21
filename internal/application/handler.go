@@ -36,9 +36,9 @@ func NewHandlers(service Service, jwtService *jw.ServiceJWT) *Handlers {
 // @Accept json
 // @Produce json
 // @Param request body dto.RequestFull true "Request information"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Success 200 {object} dto.Response	"Запрос успешно отправлен"
+// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при отправке запроса"
 // @Router /requests [post]
 func (h *Handlers) SendRequest(c *gin.Context) {
 
@@ -66,8 +66,8 @@ func (h *Handlers) SendRequest(c *gin.Context) {
 // @Description Получение всех запросов на отлов бродячих собак. Доступно только для районных администраторов.
 // @Tags Requests
 // @Produce json
-// @Success 200 {object} []dto.RequestFull
-// @Failure 500 {object} map[string]string
+// @Success 200 {object} []dto.RequestFull	"Все заявки"
+// @Failure 500 {object} dto.Response 	 "Ошибка при получении запросов."
 // @Router /requests [get]
 func (h *Handlers) GetAllRequests(c *gin.Context) {
 	requests, err := h.service.GetAllRequests()
@@ -87,8 +87,8 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 // @Produce json
 // @Param otdel_id query string true "Otdel ID"
 // @Success 200 {object} []dto.RequestFull
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
 // @Router /requests_otdel [get]
 func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
 	otdel_id := c.Query("otdel_id")
@@ -115,9 +115,9 @@ func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
 // @Tags Requests
 // @Produce json
 // @Param number query string true "Request Number"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Success 200 {object} dto.ResponseUrl
+// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
 // @Router /requests/download_url [get]
 func (h *Handlers) DowloadUrl(c *gin.Context) {
 	number := c.Query("number")

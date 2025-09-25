@@ -14,6 +14,12 @@ func (h *Handlers) authMiddleware(c *gin.Context) {
 		c.Next()
 		return
 	}
+
+	if c.Request.URL.Path == "/api/requests" && c.Request.Method == http.MethodPost {
+		c.Next()
+		return
+	}
+
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {

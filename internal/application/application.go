@@ -3,11 +3,14 @@ package application
 import (
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func InitRouter(handlers *Handlers) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	router.Use(handlers.authMiddleware)
 

@@ -99,23 +99,25 @@ func (h *Handlers) singUp(c *gin.Context) {
 }
 
 // @Summary Refresh Token
-// @Description Обновление токенов доступа и обновления. Если access токен истёк то делаешь get запрос без body с куками и получаешь новые токены в куках.
+// @Description Обновление токенов доступа и обновления.
 // @Tags Auth
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} dto.Response
-// @Failure 401 {object} dto.Response
-// @Failure 500 {object} dto.Response
-// @Router /auth/refresh [get]
+// @Success 200 {object} dto.AuthTokens
+// @Failure 401 {object} dto.AuthTokens
+// @Failure 500 {object} dto.AuthTokens
+// @Router /auth/refresh [post]
 func (h *Handlers) Refresh(c *gin.Context) {
 
-	refreshToken, err := c.Cookie("refresh_token")
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
+	var tokenStruct dto.AuthTokens
+	if err := c.Bind(&tokenStruct); err != nil {
+		c.JSON(http.StatusBadRequest, err)
 		c.Abort()
-		return
+		//логи
 	}
-	claims, err := h.jwtService.DecodeKey(refreshToken)
+
+	fmt.Println(tokenStruct)
+	claims, err := h.jwtService.DecodeKey(tokenStruct.RefreshToken)
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})

@@ -67,13 +67,13 @@ const docTemplate = `{
             }
         },
         "/auth/refresh": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Обновление токенов доступа и обновления. Если access токен истёк то делаешь get запрос без body с куками и получаешь новые токены в куках.",
+                "description": "Обновление токенов доступа и обновления.",
                 "produces": [
                     "application/json"
                 ],
@@ -85,19 +85,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthTokens"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthTokens"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthTokens"
                         }
                     }
                 }
@@ -131,19 +131,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthResponse"
                         }
                     },
                     "400": {
                         "description": "Ошибка в данных запроса.",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthResponse"
                         }
                     }
                 }
@@ -177,19 +177,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthResponse"
                         }
                     },
                     "400": {
                         "description": "Ошибка в данных запроса.",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "$ref": "#/definitions/dto.AuthResponse"
                         }
                     }
                 }
@@ -420,6 +420,10 @@ const docTemplate = `{
                     "description": "Полное имя или название организации",
                     "type": "string"
                 },
+                "id": {
+                    "description": "ID пользователя",
+                    "type": "string"
+                },
                 "login": {
                     "description": "Логин для входа в систему, должен быть уникальным",
                     "type": "string"
@@ -458,6 +462,48 @@ const docTemplate = `{
                 },
                 "password": {
                     "description": "Пароль для входа в систему",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AuthResponse": {
+            "description": "Структура для ответа с данными пользователя",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "просто сообщение",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "обычно ok  при ошибках error",
+                    "type": "string"
+                },
+                "tokens": {
+                    "description": "токены авторизации",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.AuthTokens"
+                        }
+                    ]
+                },
+                "user": {
+                    "description": "данные пользователя",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.UserProfile"
+                        }
+                    ]
+                }
+            }
+        },
+        "dto.AuthTokens": {
+            "description": "Структура c токенами",
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refhresh_token": {
                     "type": "string"
                 }
             }
@@ -586,6 +632,10 @@ const docTemplate = `{
             "properties": {
                 "full_name": {
                     "description": "Полное имя или название организации",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID пользователя",
                     "type": "string"
                 },
                 "login": {

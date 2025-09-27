@@ -7,6 +7,9 @@ definitions:
       full_name:
         description: Полное имя или название организации
         type: string
+      id:
+        description: ID пользователя
+        type: string
       login:
         description: Логин для входа в систему, должен быть уникальным
         type: string
@@ -36,6 +39,32 @@ definitions:
         type: string
       password:
         description: Пароль для входа в систему
+        type: string
+    type: object
+  dto.AuthResponse:
+    description: Структура для ответа с данными пользователя
+    properties:
+      message:
+        description: просто сообщение
+        type: string
+      status:
+        description: обычно ok  при ошибках error
+        type: string
+      tokens:
+        allOf:
+        - $ref: '#/definitions/dto.AuthTokens'
+        description: токены авторизации
+      user:
+        allOf:
+        - $ref: '#/definitions/dto.UserProfile'
+        description: данные пользователя
+    type: object
+  dto.AuthTokens:
+    description: Структура c токенами
+    properties:
+      access_token:
+        type: string
+      refhresh_token:
         type: string
     type: object
   dto.ChangePasswordRequest:
@@ -133,6 +162,9 @@ definitions:
       full_name:
         description: Полное имя или название организации
         type: string
+      id:
+        description: ID пользователя
+        type: string
       login:
         description: Логин для входа в систему, должен быть уникальным
         type: string
@@ -180,24 +212,23 @@ paths:
       tags:
       - Auth
   /auth/refresh:
-    get:
-      description: Обновление токенов доступа и обновления. Если access токен истёк
-        то делаешь get запрос без body с куками и получаешь новые токены в куках.
+    post:
+      description: Обновление токенов доступа и обновления.
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthTokens'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthTokens'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthTokens'
       security:
       - BearerAuth: []
       summary: Refresh Token
@@ -221,15 +252,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthResponse'
         "400":
           description: Ошибка в данных запроса.
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthResponse'
       summary: Sign In
       tags:
       - Auth
@@ -251,15 +282,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthResponse'
         "400":
           description: Ошибка в данных запроса.
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.Response'
+            $ref: '#/definitions/dto.AuthResponse'
       summary: Sign Up
       tags:
       - Auth

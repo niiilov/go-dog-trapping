@@ -3,6 +3,8 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.section import WD_ORIENT
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -52,7 +54,8 @@ async def generate_doc(req: RequestFull):
         number= req.number
         
     )
-    if os.path.exists(f"zayavka_{req.number}.docx"):
+    shared_dir = Path("/app/shared")
+    if os.path.exists(f"{shared_dir}/zayavka_{req.number}.docx"):
         return JSONResponse({"status": "ok"}, status_code=200)
     return JSONResponse({"error": "File not created"}, status_code=500)
 
@@ -147,11 +150,12 @@ def create_document(number, territorial_office, applicant, address, dogs_count, 
     doc.add_paragraph("34-57-29")
 
     # Сохраняем документ
-    doc.save(f"zayavka_{number}.docx")
+    shared_dir = Path("/app/shared")
+    doc.save(f"{shared_dir}/zayavka_{number}.docx")
     print(f"Документ создан: zayavka_{number}.docx")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
 
 
 

@@ -30,6 +30,7 @@ type AwsCreds struct {
 func NewConfig() *Config {
 
 	pg := Postgres{}
+
 	pg.Host = os.Getenv("PG_HOST")
 	port := os.Getenv("PG_PORT")
 	pg.Port, _ = strconv.Atoi(port)

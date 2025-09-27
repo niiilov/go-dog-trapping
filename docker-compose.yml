@@ -5,6 +5,10 @@ services:
       - .env
     ports:
       - "8091:8091"
+    networks:
+      - backend
+    volumes:
+      - shared-data:/app/shared
     restart: on-failure
     deploy:
       restart_policy:
@@ -21,8 +25,12 @@ services:
     container_name: worker
 
     ports:
-      - "8000:8000"
-    
+      - "8001:8001"
+    networks:
+      - backend
+    volumes:
+      - shared-data:/app/shared
+
     restart: on-failure
     deploy:
       restart_policy:
@@ -33,3 +41,10 @@ services:
         context: pkg/zalupa
         dockerfile: Dockerfile
         
+
+volumes:
+  shared-data:
+
+networks:
+  backend:
+    driver: bridge

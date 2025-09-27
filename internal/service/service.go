@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/niiilov/go-dog-trapping/internal/dto"
@@ -108,14 +109,17 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 	if err = worker.SendRequestForGenerating(reqData); err != nil {
 		return err
 	}
+	sharedDir := "/app/shared/"
+	key := "zayavka_" + strconv.Itoa(number) + ".docx"
+	filename := sharedDir + key
 
-	filename := "zayavka_" + strconv.Itoa(number) + ".docx"
-
-	if err = s.storage.UploadFile(context.TODO(), filename, filename); err != nil {
+	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {
 		//лог
 		fmt.Println("Error upload file to S3:", err)
 		return err
 	}
+
+	os.Remove(filename)
 
 	return nil
 }

@@ -40,7 +40,7 @@ func (h *Handlers) singIn(c *gin.Context) {
 	}
 
 	// Генерация токена
-	access, refhresh, err := h.SetNewToken(c, id)
+	tokens, err := h.SetNewToken(c, id)
 	if err != nil {
 		//логи
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка генерации токена."})
@@ -48,10 +48,9 @@ func (h *Handlers) singIn(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status":        "ok",
-		"message":       "Успешный вход.",
-		"access_token":  access,
-		"refresh_token": refhresh,
+		"status":  "ok",
+		"message": "Успешный вход.",
+		"tokens":  tokens,
 	})
 }
 
@@ -81,7 +80,7 @@ func (h *Handlers) singUp(c *gin.Context) {
 		return
 	}
 
-	access, refhresh, err := h.SetNewToken(c, id)
+	tokens, err := h.SetNewToken(c, id)
 	if err != nil {
 		//логиии
 		c.JSON(http.StatusInternalServerError, err)
@@ -89,10 +88,10 @@ func (h *Handlers) singUp(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status":        "ok",
-		"message":       "Аккаунт успешно создан.",
-		"access_token":  access,
-		"refresh_token": refhresh,
+		"status":  "ok",
+		"message": "Аккаунт успешно создан.",
+
+		"tokens": tokens,
 	})
 
 }
@@ -134,13 +133,17 @@ func (h *Handlers) Refresh(c *gin.Context) {
 		return
 	}
 
-	access, refhresh, err := h.SetNewToken(c, id)
+	tokens, err := h.SetNewToken(c, id)
+	if err != nil {
+		//логиии
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status":        "ok",
-		"message":       "Токены обновлены.",
-		"access_token":  access,
-		"refresh_token": refhresh,
+		"status":  "ok",
+		"message": "Токены обновлены.",
+		"tokens":  tokens,
 	})
 
 }
@@ -221,24 +224,27 @@ func (h *Handlers) Profile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
 }
 
-func (h *Handlers) SetNewToken(c *gin.Context, id string) (accessToken string, refhreshToken string, err error) {
+func (h *Handlers) SetNewToken(c *gin.Context, id string) (*dto.AuthTokens, error) {
 
 	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix()}
 
 	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix()}
 
-	accessToken, err = h.jwtService.Encode(newAccesClaims)
+	var tokens dto.AuthTokens
+
+	access, err := h.jwtService.Encode(newAccesClaims)
 	if err != nil {
 		// логи
 
-		return "", "", err
+		return nil, err
 	}
+	tokens.AccesToken = access
 
-	refreshToken, err := h.jwtService.Encode(newRefreshClaims)
+	tokens.RefreshToken, err = h.jwtService.Encode(newRefreshClaims)
 	if err != nil {
 		// логи
-		return "", "", err
+		return nil, err
 	}
 
-	return accessToken, refreshToken, nil
+	return &tokens, nil
 }

@@ -39,6 +39,13 @@ type ChangePasswordRequest struct {
 	NewPassword string `json:"new_password"` // Новый пароль для входа в систему
 }
 
+// AuthTokens modle info
+// @Description Структура c токенами
+type AuthTokens struct {
+	AccesToken   string `json:"access_token"`
+	RefreshToken string `json:"refhresh_token"`
+}
+
 // RequestFull model info
 // @Description Полная информация о заявке на отлов бродячей собаки. Поля id, number, status и created_at игнорируются при создании заявки.
 type RequestFull struct {

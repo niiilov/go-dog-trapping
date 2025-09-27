@@ -40,14 +40,19 @@ func (h *Handlers) singIn(c *gin.Context) {
 	}
 
 	// Генерация токена
-	err = h.SetNewToken(c, id)
+	access, refhresh, err := h.SetNewToken(c, id)
 	if err != nil {
 		//логи
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка генерации токена."})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Успешный вход."})
+	c.JSON(http.StatusOK, gin.H{
+		"status":        "ok",
+		"message":       "Успешный вход.",
+		"access_token":  access,
+		"refresh_token": refhresh,
+	})
 }
 
 // @Summary Sign Up
@@ -76,14 +81,19 @@ func (h *Handlers) singUp(c *gin.Context) {
 		return
 	}
 
-	err = h.SetNewToken(c, id)
+	access, refhresh, err := h.SetNewToken(c, id)
 	if err != nil {
 		//логиии
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Аккаунт успешно создан."})
+	c.JSON(http.StatusOK, gin.H{
+		"status":        "ok",
+		"message":       "Аккаунт успешно создан.",
+		"access_token":  access,
+		"refresh_token": refhresh,
+	})
 
 }
 
@@ -124,9 +134,14 @@ func (h *Handlers) Refresh(c *gin.Context) {
 		return
 	}
 
-	h.SetNewToken(c, id)
+	access, refhresh, err := h.SetNewToken(c, id)
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Токены обновлены."})
+	c.JSON(http.StatusOK, gin.H{
+		"status":        "ok",
+		"message":       "Токены обновлены.",
+		"access_token":  access,
+		"refresh_token": refhresh,
+	})
 
 }
 
@@ -206,44 +221,24 @@ func (h *Handlers) Profile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
 }
 
-func (h *Handlers) SetNewToken(c *gin.Context, id string) error {
+func (h *Handlers) SetNewToken(c *gin.Context, id string) (accessToken string, refhreshToken string, err error) {
 
 	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix()}
 
 	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix()}
 
-	accessToken, err := h.jwtService.Encode(newAccesClaims)
+	accessToken, err = h.jwtService.Encode(newAccesClaims)
 	if err != nil {
 		// логи
 
-		return err
+		return "", "", err
 	}
 
 	refreshToken, err := h.jwtService.Encode(newRefreshClaims)
 	if err != nil {
 		// логи
-		return err
+		return "", "", err
 	}
 
-	c.SetCookie(
-		"refresh_token",
-		refreshToken,
-		int(dto.RefreshTimeExpr),
-		"/",
-		"localhost",
-		false,
-		true,
-	)
-
-	c.SetCookie(
-		"access_token",
-		accessToken,
-		int(dto.AccesTimeExpr),
-		"/",
-		"localhost",
-		false,
-		true,
-	)
-
-	return nil
+	return accessToken, refreshToken, nil
 }

@@ -16,9 +16,9 @@ import (
 // @Accept json
 // @Produce json
 // @Param account body dto.AuthCredentials true "Account credentials"
-// @Success 200 {object} dto.Response
-// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response
+// @Success 200 {object} dto.AuthResponse
+// @Failure 400 {object} dto.AuthResponse	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.AuthResponse
 // @Router /auth/sign-in [post]
 func (h *Handlers) singIn(c *gin.Context) {
 
@@ -31,7 +31,7 @@ func (h *Handlers) singIn(c *gin.Context) {
 		Login:    cred.Login,
 		Password: cred.Password,
 	}
-	id, err := h.service.ValidateAccount(reqStruct)
+	user, err := h.service.ValidateAccount(reqStruct)
 	if err != nil {
 		//логи
 		fmt.Println(err)
@@ -40,7 +40,7 @@ func (h *Handlers) singIn(c *gin.Context) {
 	}
 
 	// Генерация токена
-	tokens, err := h.SetNewToken(c, id)
+	tokens, err := h.SetNewToken(c, user.ID)
 	if err != nil {
 		//логи
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка генерации токена."})
@@ -50,6 +50,7 @@ func (h *Handlers) singIn(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
 		"message": "Успешный вход.",
+		"user":    user,
 		"tokens":  tokens,
 	})
 }
@@ -60,9 +61,9 @@ func (h *Handlers) singIn(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param account body dto.Account true "Account information"
-// @Success 200 {object} dto.Response
-// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response
+// @Success 200 {object} dto.AuthResponse
+// @Failure 400 {object} dto.AuthResponse	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.AuthResponse
 // @Router /auth/sign-up [post]
 func (h *Handlers) singUp(c *gin.Context) {
 
@@ -79,6 +80,7 @@ func (h *Handlers) singUp(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
+	reqStruct.ID = id
 
 	tokens, err := h.SetNewToken(c, id)
 	if err != nil {
@@ -90,8 +92,8 @@ func (h *Handlers) singUp(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
 		"message": "Аккаунт успешно создан.",
-
-		"tokens": tokens,
+		"user":    reqStruct,
+		"tokens":  tokens,
 	})
 
 }

@@ -42,7 +42,7 @@ func (r *Repository) CreateAccount(account *dto.Account) (string, error) {
 	return id, nil
 }
 
-func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (id string, hashPass string, err error) {
+func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, err error) {
 	query := sq.Select("id", "password_hash").
 		From("users").
 		Where(sq.Eq{"login": account.Login}).
@@ -50,15 +50,23 @@ func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (id string, h
 
 	sql, args, err := query.ToSql()
 	if err != nil {
-		return "", "", err
+		return nil, "", err
 	}
+	var id string
 
 	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id, &hashPass)
 	if err != nil {
-		return "", "", err
+		return nil, "", err
+	}
+	user, err = r.GetUserProfile(id)
+
+	if err != nil {
+		return nil, "", err
 	}
 
-	return id, hashPass, nil
+	user.ID = id
+
+	return user, hashPass, nil
 }
 
 func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {

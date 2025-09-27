@@ -22,7 +22,7 @@ var (
 
 type repository interface {
 	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.AuthCredentials) (id string, hashPass string, err error)
+	ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, err error)
 	SendRequest(request *dto.RequestFull) (int, error)
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
@@ -61,23 +61,23 @@ func (s *Service) CreateAccount(account *dto.Account) (string, error) {
 
 	return s.repository.CreateAccount(account)
 }
-func (s *Service) ValidateAccount(account *dto.AuthCredentials) (string, error) {
+func (s *Service) ValidateAccount(account *dto.AuthCredentials) (*dto.UserProfile, error) {
 
 	err := validate.Validate(account)
 	if err != nil {
 
-		return "", ErrInvalidData
+		return nil, ErrInvalidData
 	}
 
-	id, hashPass, err := s.repository.ValidateAccount(account)
+	user, hashPass, err := s.repository.ValidateAccount(account)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if !security.Check(account.Password, hashPass) {
-		return "", ErrInvalidPassword
+		return nil, ErrInvalidPassword
 	}
-	return id, nil
+	return user, nil
 }
 
 func (s *Service) SendRequest(request *dto.RequestFull) error {

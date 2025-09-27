@@ -10,6 +10,7 @@ const (
 // Account model info
 // @Description Структура для создания учетной записи пользователя. Все поля обязательны к заполнению
 type Account struct {
+	ID       string `json:"id"`        // ID пользователя
 	FullName string `json:"full_name"` //Полное имя или название организации
 	Login    string `json:"login"`     // Логин для входа в систему, должен быть уникальным
 	Role     string `json:"role"`      // Роль пользователя, например, "admin", "user", "otdel" и т.д.
@@ -19,6 +20,7 @@ type Account struct {
 // UserProfile model info
 // @Description Структура для получения профиля пользователя. Все поля обязательны к заполнению
 type UserProfile struct {
+	ID       string `json:"id"`        // ID пользователя
 	FullName string `json:"full_name"` //Полное имя или название организации
 	Login    string `json:"login"`     // Логин для входа в систему, должен быть уникальным
 	Role     string `json:"role"`      // Роль пользователя, например, "admin", "user", "otdel" и т.д.
@@ -94,6 +96,17 @@ type RequestForGenerating struct {
 type Response struct {
 	Status  string `json:"status"`  // обычно ok  при ошибках error
 	Message string `json:"message"` // просто сообщение
+
+}
+
+//Response model info
+//@Description  Структура для ответа с данными пользователя
+type AuthResponse struct {
+	Status  string      `json:"status"`  // обычно ok  при ошибках error
+	Message string      `json:"message"` // просто сообщение
+	User    UserProfile `json:"user"`    // данные пользователя
+	Tokens  AuthTokens  `json:"tokens"`  // токены авторизации
+
 }
 
 //ResponseUrl model info

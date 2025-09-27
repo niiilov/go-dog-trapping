@@ -11,7 +11,7 @@ import (
 
 type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.AuthCredentials) (id string, err error)
+	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, err error)
 	SendRequest(request *dto.RequestFull) error
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)

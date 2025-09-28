@@ -25,8 +25,6 @@ COPY --from=builder /app/app_service .
 # Ensure /app/migrations exists in your build context before copying, or remove this line if not needed
 # COPY --from=builder /app/migrations ./migrations
 
-COPY --from=builder /app/migrations  ./migrations
-
 COPY --from=builder /app/certs ./certs
 
 CMD [ "./app_service" ]

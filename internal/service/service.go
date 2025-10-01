@@ -111,7 +111,7 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 		return err
 	}
 	sharedDir := "/app/shared/"
-	key := "zayavka_" + strconv.Itoa(number) + ".docx"
+	key := "zayavka_" + strconv.Itoa(number) + ".xlsx"
 	filename := sharedDir + key
 
 	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {

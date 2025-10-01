@@ -227,6 +227,30 @@ func (r *Repository) ChangePassword(req *dto.ChangePasswordRequest) error {
 
 }
 
+func (r *Repository) ChangeProfileInfo(req *dto.ChangeProfileRequest) error {
+	query := sq.Update("users").
+		Set("full_name", req.FullName).
+		Set("login", req.Login).
+		Where(sq.Eq{"id": req.ID}).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("no user found with login: %s", req.Login)
+	}
+
+	return nil
+}
+
 func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
 	query := sq.Select("full_name", "login", "role").
 		From("users").

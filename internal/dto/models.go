@@ -33,6 +33,14 @@ type AuthCredentials struct {
 	Password string `json:"password"` // Пароль для входа в систему
 }
 
+// ChangeProfileRequest model info
+// @Description Структура для отправки запроса на изменение данных профиля
+type ChangeProfileRequest struct {
+	ID       string `json:"id"`        // ID пользователя
+	FullName string `json:"full_name"` //Полное имя или название организации
+	Login    string `json:"login"`     // Логин для входа в систему, должен быть уникальным
+}
+
 // ChangePasswordRequest model info
 // @Description Структура для смены пароля пользователя. Все поля обязательны к заполнению
 type ChangePasswordRequest struct {

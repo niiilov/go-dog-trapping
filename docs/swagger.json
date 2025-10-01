@@ -16,7 +16,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Смена пароля пользователя.",
+                "description": "Смена данных профлия пользователя.",
                 "consumes": [
                     "application/json"
                 ],
@@ -24,23 +24,23 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "User"
                 ],
-                "summary": "Change Password",
+                "summary": "Change Profile Info",
                 "parameters": [
                     {
-                        "description": "Change Password information",
+                        "description": "Change Profile information",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ChangePasswordRequest"
+                            "$ref": "#/definitions/dto.ChangeProfileRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Пароль успешно изменен.",
+                        "description": "Информация успешна изменена.",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
@@ -52,7 +52,7 @@
                         }
                     },
                     "500": {
-                        "description": "Ошибка при cмене  пароля.",
+                        "description": "Ошибка при cмене  данных.",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
@@ -516,6 +516,24 @@
                 },
                 "old_password": {
                     "description": "Старый пароль для входа в систему",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ChangeProfileRequest": {
+            "description": "Структура для отправки запроса на изменение данных профиля",
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "description": "Полное имя или название организации",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID пользователя",
+                    "type": "string"
+                },
+                "login": {
+                    "description": "Логин для входа в систему, должен быть уникальным",
                     "type": "string"
                 }
             }

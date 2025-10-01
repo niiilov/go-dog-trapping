@@ -28,6 +28,7 @@ type repository interface {
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
 	ChangePassword(req *dto.ChangePasswordRequest) error
+	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 }
 
@@ -138,6 +139,11 @@ func (s *Service) GetAllRequests() ([]*dto.RequestFull, error) {
 		return nil, err
 	}
 	return requests, nil
+}
+
+func (s *Service) ChangeProfileInfo(req *dto.ChangeProfileRequest) error {
+	err := s.repository.ChangeProfileInfo(req)
+	return err
 }
 
 func (s *Service) ChangePassword(req *dto.ChangePasswordRequest) error {

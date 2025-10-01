@@ -22,6 +22,8 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	router.Use(handlers.authMiddleware)
+
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
@@ -33,6 +35,7 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.POST("/api/requests", handlers.SendRequest)
 	router.POST("/api/auth/change-password", handlers.ChangePassword)
 	router.POST("/api/auth/refresh", handlers.Refresh)
+	router.POST("/api/user/change-profile-info", handlers.ChangeProfileInfo)
 
 	router.GET("/api/requests", handlers.GetAllRequests)
 	router.GET("/api/requests_otdel", handlers.GetRequestsByOtdel)

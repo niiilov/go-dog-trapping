@@ -154,7 +154,7 @@ func (h *Handlers) Refresh(c *gin.Context) {
 
 // @Summary Change Password
 // @Description Смена пароля пользователя.
-// @Tags Auth
+// @Tags User
 // @Accept json
 // @Produce json
 // @Param request body dto.ChangePasswordRequest true "Change Password information"
@@ -181,6 +181,38 @@ func (h *Handlers) ChangePassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Пароль успешно изменен."})
+
+}
+
+// @Summary Change Profile Info
+// @Description Смена данных профлия пользователя.
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param request body dto.ChangeProfileRequest true "Change Profile information"
+// @Security BearerAuth
+// @Success 200 {object} dto.Response  	 "Информация успешна изменена."
+// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при cмене  данных."
+// @Router /auth/change-password [post]
+func (h *Handlers) ChangeProfileInfo(c *gin.Context) {
+	var reqStruct dto.ChangeProfileRequest
+
+	if err := c.Bind(&reqStruct); err != nil {
+		//логи
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+	err := h.service.ChangeProfileInfo(&reqStruct)
+	if err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при изменение информации."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Информация успешно изменена."})
 
 }
 
@@ -224,6 +256,7 @@ func (h *Handlers) Profile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении профиля."})
 		return
 	}
+	profile.ID = userId
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
 }

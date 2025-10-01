@@ -80,6 +80,19 @@ definitions:
         description: Старый пароль для входа в систему
         type: string
     type: object
+  dto.ChangeProfileRequest:
+    description: Структура для отправки запроса на изменение данных профиля
+    properties:
+      full_name:
+        description: Полное имя или название организации
+        type: string
+      id:
+        description: ID пользователя
+        type: string
+      login:
+        description: Логин для входа в систему, должен быть уникальным
+        type: string
+    type: object
   dto.RequestFull:
     description: Полная информация о заявке на отлов бродячей собаки. Поля id, number,
       status и created_at игнорируются при создании заявки.
@@ -183,19 +196,19 @@ paths:
     post:
       consumes:
       - application/json
-      description: Смена пароля пользователя.
+      description: Смена данных профлия пользователя.
       parameters:
-      - description: Change Password information
+      - description: Change Profile information
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.ChangePasswordRequest'
+          $ref: '#/definitions/dto.ChangeProfileRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: Пароль успешно изменен.
+          description: Информация успешна изменена.
           schema:
             $ref: '#/definitions/dto.Response'
         "400":
@@ -203,14 +216,14 @@ paths:
           schema:
             $ref: '#/definitions/dto.Response'
         "500":
-          description: Ошибка при cмене  пароля.
+          description: Ошибка при cмене  данных.
           schema:
             $ref: '#/definitions/dto.Response'
       security:
       - BearerAuth: []
-      summary: Change Password
+      summary: Change Profile Info
       tags:
-      - Auth
+      - User
   /auth/refresh:
     post:
       description: Обновление токенов доступа и обновления.

@@ -36,3 +36,6 @@ migrations/000001_init.down.sql
 migrations/000001_init.up.sql
 referat_media.docx
 sperma.txt
+test/main.py
+test/__pycache__/main.cpython-313.pyc
+zayavka_3.docx

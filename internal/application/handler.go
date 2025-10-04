@@ -127,7 +127,7 @@ func (h *Handlers) DowloadUrl(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
-	filename := "zayavka_" + number + ".docx"
+	filename := "zayavka_" + number + ".xlsx"
 
 	fmt.Println(filename)
 	url := h.service.GetFileURL(filename)

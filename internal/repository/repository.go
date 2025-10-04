@@ -158,7 +158,7 @@ func (r *Repository) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, er
 }
 
 func (r *Repository) GetAllRequests() ([]*dto.RequestFull, error) {
-	query := sq.Select("requests.id, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
+	query := sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
 		From("requests").
 		InnerJoin("request_sources ON requests.source_id = request_sources.id").
 		InnerJoin("applicants ON requests.applicant_id = applicants.id").
@@ -183,6 +183,7 @@ func (r *Repository) GetAllRequests() ([]*dto.RequestFull, error) {
 
 		err := rows.Scan(
 			&req.ID,
+			&req.Number,
 			&req.Source.ID, &req.Applicant.ID,
 			&req.Address,
 			&req.DogsCount,

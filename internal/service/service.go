@@ -30,6 +30,7 @@ type repository interface {
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
+	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
 }
 
 type storage interface {
@@ -123,6 +124,12 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 	os.Remove(filename)
 
 	return nil
+}
+
+func (s *Service) ChangeStatusRequest(req *dto.ChangeStatusRequest) error {
+
+	err := s.repository.ChangeStatusRequest(req)
+	return err
 }
 
 func (s *Service) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error) {

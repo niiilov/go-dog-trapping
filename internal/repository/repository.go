@@ -109,6 +109,29 @@ func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {
 	return number, nil
 }
 
+func (r *Repository) ChangeStatusRequest(req *dto.ChangeStatusRequest) error {
+
+	query := sq.Update("requests").
+		Set("status", req.Status).
+		Where(sq.Eq{"id": req.ID}).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("no request found with id: %s", req.ID)
+	}
+
+	return nil
+}
+
 func (r *Repository) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error) {
 	query := sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
 		From("requests").

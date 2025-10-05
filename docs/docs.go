@@ -278,6 +278,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/requests/change-status": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Изменение статуса заявки на отлов бродячей собаки. Поля id и status обязательны к заполнению.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Change Status Request",
+                "parameters": [
+                    {
+                        "description": "Change Status Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус заявки успешно изменен.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при изменении статуса заявки.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/requests/download_url": {
             "get": {
                 "security": [
@@ -540,6 +591,19 @@ const docTemplate = `{
                 },
                 "login": {
                     "description": "Логин для входа в систему, должен быть уникальным",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ChangeStatusRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "ID заявки",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Новый статус заявки (новая, в работе, выполнена, отменена)",
                     "type": "string"
                 }
             }

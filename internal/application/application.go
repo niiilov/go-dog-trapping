@@ -50,6 +50,8 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.POST("/api/auth/refresh", handlers.Refresh)
 	router.POST("/api/user/change-profile-info", handlers.ChangeProfileInfo)
 
+	router.POST("/api/requests/change-status", handlers.ChangeStatusRequest)
+
 	router.GET("/api/requests", handlers.GetAllRequests)
 	router.GET("/api/requests_otdel", handlers.GetRequestsByOtdel)
 	router.GET("/api/user/profile", handlers.Profile)

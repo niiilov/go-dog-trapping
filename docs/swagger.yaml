@@ -93,6 +93,15 @@ definitions:
         description: Логин для входа в систему, должен быть уникальным
         type: string
     type: object
+  dto.ChangeStatusRequest:
+    properties:
+      id:
+        description: ID заявки
+        type: string
+      status:
+        description: Новый статус заявки (новая, в работе, выполнена, отменена)
+        type: string
+    type: object
   dto.RequestFull:
     description: Полная информация о заявке на отлов бродячей собаки. Поля id, number,
       status и created_at игнорируются при создании заявки.
@@ -360,6 +369,39 @@ paths:
       security:
       - BearerAuth: []
       summary: Send Request
+      tags:
+      - Requests
+  /requests/change-status:
+    post:
+      consumes:
+      - application/json
+      description: Изменение статуса заявки на отлов бродячей собаки. Поля id и status
+        обязательны к заполнению.
+      parameters:
+      - description: Change Status Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangeStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Статус заявки успешно изменен.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Ошибка в данных запроса.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Ошибка при изменении статуса заявки.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Change Status Request
       tags:
       - Requests
   /requests/download_url:

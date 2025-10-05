@@ -19,6 +19,7 @@ type Service interface {
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	GetFileURL(objectKey string) string
+	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -60,6 +61,35 @@ func (h *Handlers) SendRequest(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Запрос успешно отправлен"})
+}
+
+// @Summary Change Status Request
+// @Security BearerAuth
+// @Description Изменение статуса заявки на отлов бродячей собаки. Поля id и status обязательны к заполнению.
+// @Tags Requests
+// @Accept json
+// @Produce json
+// @Param request body dto.ChangeStatusRequest true "Change Status Request"
+// @Success 200 {object} dto.Response	"Статус заявки успешно изменен."
+// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при изменении статуса заявки."
+// @Router /requests/change-status [post]
+func (h *Handlers) ChangeStatusRequest(c *gin.Context) {
+	var reqStruct dto.ChangeStatusRequest
+	if err := c.Bind(&reqStruct); err != nil {
+		//логи
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+	err := h.service.ChangeStatusRequest(&reqStruct)
+	if err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при изменении статуса заявки."})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Статус заявки успешно изменен."})
 }
 
 // @Summary Get All Requests

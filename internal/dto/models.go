@@ -56,6 +56,11 @@ type AuthTokens struct {
 	RefreshToken string `json:"refhresh_token"`
 }
 
+type ChangeStatusRequest struct {
+	ID     string `json:"id"`     // ID заявки
+	Status string `json:"status"` // Новый статус заявки (новая, в работе, выполнена, отменена)
+}
+
 // RequestFull model info
 // @Description Полная информация о заявке на отлов бродячей собаки. Поля id, number, status и created_at игнорируются при создании заявки.
 type RequestFull struct {

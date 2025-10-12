@@ -31,7 +31,7 @@ func (h *Handlers) singIn(c *gin.Context) {
 		Login:    cred.Login,
 		Password: cred.Password,
 	}
-	user, err := h.service.ValidateAccount(reqStruct)
+	user, role_id, err := h.service.ValidateAccount(reqStruct)
 	if err != nil {
 		//логи
 		fmt.Println(err)
@@ -40,7 +40,7 @@ func (h *Handlers) singIn(c *gin.Context) {
 	}
 
 	// Генерация токена
-	tokens, err := h.SetNewToken(c, user.ID)
+	tokens, err := h.SetNewToken(c, user.ID, role_id)
 	if err != nil {
 		//логи
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка генерации токена."})
@@ -65,38 +65,38 @@ func (h *Handlers) singIn(c *gin.Context) {
 // @Failure 400 {object} dto.AuthResponse	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.AuthResponse
 // @Router /auth/sign-up [post]
-func (h *Handlers) singUp(c *gin.Context) {
+// func (h *Handlers) singUp(c *gin.Context) {
 
-	var reqStruct dto.Account
-	if err := c.Bind(&reqStruct); err != nil {
-		//логи
-	}
+// 	var reqStruct dto.Account
+// 	if err := c.Bind(&reqStruct); err != nil {
+// 		//логи
+// 	}
 
-	id, err := h.service.CreateAccount(&reqStruct)
+// 	id, err := h.service.CreateAccount(&reqStruct)
 
-	if err != nil {
-		// опять логи
+// 	if err != nil {
+// 		// опять логи
 
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-	reqStruct.ID = id
+// 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+// 		return
+// 	}
+// 	reqStruct.ID = id
 
-	tokens, err := h.SetNewToken(c, id)
-	if err != nil {
-		//логиии
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
+// 	tokens, err := h.SetNewToken(c, id)
+// 	if err != nil {
+// 		//логиии
+// 		c.JSON(http.StatusInternalServerError, err)
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "ok",
-		"message": "Аккаунт успешно создан.",
-		"user":    reqStruct,
-		"tokens":  tokens,
-	})
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"status":  "ok",
+// 		"message": "Аккаунт успешно создан.",
+// 		"user":    reqStruct,
+// 		"tokens":  tokens,
+// 	})
 
-}
+// }
 
 // @Summary Refresh Token
 // @Description Обновление токенов доступа и обновления.
@@ -116,8 +116,7 @@ func (h *Handlers) Refresh(c *gin.Context) {
 		//логи
 	}
 
-	fmt.Println(tokenStruct)
-	claims, err := h.jwtService.DecodeKey(tokenStruct.RefreshToken)
+	claims, role_id, err := h.jwtService.DecodeKey(tokenStruct.RefreshToken)
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
@@ -137,7 +136,7 @@ func (h *Handlers) Refresh(c *gin.Context) {
 		return
 	}
 
-	tokens, err := h.SetNewToken(c, id)
+	tokens, err := h.SetNewToken(c, id, role_id)
 	if err != nil {
 		//логиии
 		c.JSON(http.StatusInternalServerError, err)
@@ -228,7 +227,7 @@ func (h *Handlers) ChangeProfileInfo(c *gin.Context) {
 func (h *Handlers) Profile(c *gin.Context) {
 
 	token := c.Value("access_token").(string)
-	claims, err := h.jwtService.DecodeKey(token)
+	claims, _, err := h.jwtService.DecodeKey(token)
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
@@ -261,11 +260,11 @@ func (h *Handlers) Profile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
 }
 
-func (h *Handlers) SetNewToken(c *gin.Context, id string) (*dto.AuthTokens, error) {
+func (h *Handlers) SetNewToken(c *gin.Context, id string, role_id string) (*dto.AuthTokens, error) {
 
-	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix()}
+	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix(), "role": role_id}
 
-	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix()}
+	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix(), "role": role_id}
 
 	var tokens dto.AuthTokens
 

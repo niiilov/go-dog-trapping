@@ -11,7 +11,7 @@ import (
 
 type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, err error)
+	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, role_id string, err error)
 	SendRequest(request *dto.RequestFull) error
 	GetAllRequests() ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
@@ -101,14 +101,29 @@ func (h *Handlers) ChangeStatusRequest(c *gin.Context) {
 // @Failure 500 {object} dto.Response 	 "Ошибка при получении запросов."
 // @Router /requests [get]
 func (h *Handlers) GetAllRequests(c *gin.Context) {
-	requests, err := h.service.GetAllRequests()
-	if err != nil {
-		// опять логи
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении запросов."})
+	role_id, exists := c.Get("role_id")
+
+	fmt.Println(role_id, "РОЛЬ ID  В GET AL REQ")
+	if !exists {
+		c.JSON(http.StatusForbidden, gin.H{"status": "error", "message": "Доступ запрещен."})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
+
+	if role_id == "794c900e-f04f-496d-a4e6-5cf5d69fad90" {
+		requests, err := h.service.GetAllRequests()
+		if err != nil {
+			// опять логи
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении запросов."})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
+		return
+	} else {
+
+		h.GetRequestsByOtdel(c, role_id.(string))
+	}
+
 }
 
 // @Summary Get Requests By Otdel
@@ -121,14 +136,9 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
 // @Router /requests_otdel [get]
-func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
-	otdel_id := c.Query("otdel_id")
-	if otdel_id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
+func (h *Handlers) GetRequestsByOtdel(c *gin.Context, role_id string) {
 
-	requests, err := h.service.GetRequestsByOtdel(otdel_id)
+	requests, err := h.service.GetRequestsByOtdel(role_id)
 
 	if err != nil {
 

@@ -4,7 +4,7 @@ import "time"
 
 const (
 	AccesTimeExpr   = 15 * time.Minute
-	RefreshTimeExpr = 48 * time.Hour
+	RefreshTimeExpr = 60 * time.Hour
 )
 
 // Account model info

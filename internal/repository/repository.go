@@ -42,31 +42,31 @@ func (r *Repository) CreateAccount(account *dto.Account) (string, error) {
 	return id, nil
 }
 
-func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, err error) {
-	query := sq.Select("id", "password_hash").
+func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role_id string, err error) {
+	query := sq.Select("id", "password_hash", "role_id").
 		From("users").
 		Where(sq.Eq{"login": account.Login}).
 		PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := query.ToSql()
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 	var id string
 
-	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id, &hashPass)
+	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id, &hashPass, &role_id)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 	user, err = r.GetUserProfile(id)
 
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	user.ID = id
 
-	return user, hashPass, nil
+	return user, hashPass, role_id, nil
 }
 
 func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {
@@ -182,6 +182,7 @@ func (r *Repository) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, er
 }
 
 func (r *Repository) GetAllRequests() ([]*dto.RequestFull, error) {
+	fmt.Println("я тут")
 	query := sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
 		From("requests").
 		InnerJoin("request_sources ON requests.source_id = request_sources.id").

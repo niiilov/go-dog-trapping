@@ -3,7 +3,7 @@ package dto
 import "time"
 
 const (
-	AccesTimeExpr   = 15 * time.Minute
+	AccesTimeExpr   = 1 * time.Hour
 	RefreshTimeExpr = 60 * time.Hour
 )
 

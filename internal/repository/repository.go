@@ -138,6 +138,7 @@ func (r *Repository) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, er
 		InnerJoin("request_sources ON requests.source_id = request_sources.id").
 		InnerJoin("applicants ON requests.applicant_id = applicants.id").
 		Where(sq.Eq{"requests.source_id": otdel_id}).
+		OrderBy("requests.created_at DESC").
 		PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := query.ToSql()
@@ -185,8 +186,8 @@ func (r *Repository) GetAllRequests() ([]*dto.RequestFull, error) {
 		From("requests").
 		InnerJoin("request_sources ON requests.source_id = request_sources.id").
 		InnerJoin("applicants ON requests.applicant_id = applicants.id").
-		OrderBy("created_at DESC")
-
+		OrderBy("requests.created_at DESC").
+		PlaceholderFormat(sq.Dollar)
 	sql, args, err := query.ToSql()
 	if err != nil {
 

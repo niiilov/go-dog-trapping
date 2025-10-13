@@ -121,7 +121,7 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 		return
 	} else {
 
-		h.GetRequestsByOtdel(c, role_id.(string))
+		h.GetRequestsByOtdelFunc(c, role_id.(string))
 	}
 
 }
@@ -136,7 +136,26 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
 // @Router /requests_otdel [get]
-func (h *Handlers) GetRequestsByOtdel(c *gin.Context, role_id string) {
+func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
+	otdel_id := c.Query("otdel_id")
+	if otdel_id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+
+	requests, err := h.service.GetRequestsByOtdel(otdel_id)
+
+	if err != nil {
+
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении запросов."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
+}
+
+func (h *Handlers) GetRequestsByOtdelFunc(c *gin.Context, role_id string) {
 
 	requests, err := h.service.GetRequestsByOtdel(role_id)
 

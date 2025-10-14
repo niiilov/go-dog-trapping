@@ -53,7 +53,7 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.POST("/api/requests/change-status", handlers.ChangeStatusRequest)
 
 	router.GET("/api/requests", handlers.GetAllRequests)
-	router.GET("/api/requests_otdel", handlers.GetRequestsByOtdel)
+
 	router.GET("/api/user/profile", handlers.Profile)
 	router.GET("/api/requests/download_url", handlers.DowloadUrl)
 

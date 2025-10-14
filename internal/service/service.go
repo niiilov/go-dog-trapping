@@ -25,8 +25,8 @@ type repository interface {
 	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role_id string, err error)
 	SendRequest(request *dto.RequestFull) (int, error)
-	GetAllRequests() ([]*dto.RequestFull, error)
-	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
+	GetAllRequests(year string) ([]*dto.RequestFull, error)
+	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
@@ -132,16 +132,16 @@ func (s *Service) ChangeStatusRequest(req *dto.ChangeStatusRequest) error {
 	return err
 }
 
-func (s *Service) GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error) {
-	requests, err := s.repository.GetRequestsByOtdel(otdel_id)
+func (s *Service) GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error) {
+	requests, err := s.repository.GetRequestsByOtdel(otdel_id, year)
 	if err != nil {
 		return nil, err
 	}
 	return requests, nil
 }
 
-func (s *Service) GetAllRequests() ([]*dto.RequestFull, error) {
-	requests, err := s.repository.GetAllRequests()
+func (s *Service) GetAllRequests(year string) ([]*dto.RequestFull, error) {
+	requests, err := s.repository.GetAllRequests(year)
 	if err != nil {
 		return nil, err
 	}

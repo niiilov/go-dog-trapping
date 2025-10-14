@@ -13,8 +13,8 @@ type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, role_id string, err error)
 	SendRequest(request *dto.RequestFull) error
-	GetAllRequests() ([]*dto.RequestFull, error)
-	GetRequestsByOtdel(otdel_id string) ([]*dto.RequestFull, error)
+	GetAllRequests(year string) ([]*dto.RequestFull, error)
+	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
@@ -97,20 +97,31 @@ func (h *Handlers) ChangeStatusRequest(c *gin.Context) {
 // @Description Получение всех запросов на отлов бродячих собак. Доступно только для районных администраторов.
 // @Tags Requests
 // @Produce json
-// @Success 200 {object} []dto.RequestFull	"Все заявки"
+// @Success 200 {object} []dto.RequestFull	"Все заявки"  query param otdel_id - для получения заявок по отделу, доступно только для  админа
+// @Failure 400 {object} dto.Response 	 "Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response 	 "Ошибка при получении запросов."
 // @Router /requests [get]
 func (h *Handlers) GetAllRequests(c *gin.Context) {
 	role_id, exists := c.Get("role_id")
 
-	fmt.Println(role_id, "РОЛЬ ID  В GET AL REQ")
 	if !exists {
 		c.JSON(http.StatusForbidden, gin.H{"status": "error", "message": "Доступ запрещен."})
 		return
 	}
+	year := c.Query("year")
+	fmt.Println("year:", year)
+
+	// Если роль - супер админ, то возвращаем все заявки
+	// Иначе возвращаем заявки по отделу
+	// 794c900e-f04f-496d-a4e6-5cf5d69fad90 - это роль супер админа
 
 	if role_id == "794c900e-f04f-496d-a4e6-5cf5d69fad90" {
-		requests, err := h.service.GetAllRequests()
+
+		if otdel_id := c.Query("otdel_id"); otdel_id != "" {
+			h.GetRequestsByOtdelFunc(c, otdel_id, year)
+			return
+		}
+		requests, err := h.service.GetAllRequests(year)
 		if err != nil {
 			// опять логи
 			fmt.Println(err)
@@ -121,43 +132,15 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 		return
 	} else {
 
-		h.GetRequestsByOtdelFunc(c, role_id.(string))
+		h.GetRequestsByOtdelFunc(c, role_id.(string), year)
 	}
 
 }
 
-// @Summary Get Requests By Otdel
-// @Security BearerAuth
-// @Description Получение запросов на отлов бродячих собак по отделу. Требуется параметр otdel_id в query, otdel_id находится в справочнике. Доступно только для районных администраторов.
-// @Tags Requests
-// @Produce json
-// @Param otdel_id query string true "Otdel ID"
-// @Success 200 {object} []dto.RequestFull
-// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
-// @Router /requests_otdel [get]
-func (h *Handlers) GetRequestsByOtdel(c *gin.Context) {
-	otdel_id := c.Query("otdel_id")
-	if otdel_id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
+// GetRequestsByOtdelFunc - вспомогательная функция для получения заявок по отделу
+func (h *Handlers) GetRequestsByOtdelFunc(c *gin.Context, otdel_id string, year string) {
 
-	requests, err := h.service.GetRequestsByOtdel(otdel_id)
-
-	if err != nil {
-
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении запросов."})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
-}
-
-func (h *Handlers) GetRequestsByOtdelFunc(c *gin.Context, role_id string) {
-
-	requests, err := h.service.GetRequestsByOtdel(role_id)
+	requests, err := h.service.GetRequestsByOtdel(otdel_id, year)
 
 	if err != nil {
 

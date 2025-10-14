@@ -149,52 +149,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/sign-up": {
-            "post": {
-                "description": "Регистрация нового пользователя.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Sign Up",
-                "parameters": [
-                    {
-                        "description": "Account information",
-                        "name": "account",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.Account"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/requests": {
             "get": {
                 "security": [
@@ -212,12 +166,18 @@ const docTemplate = `{
                 "summary": "Get All Requests",
                 "responses": {
                     "200": {
-                        "description": "Все заявки",
+                        "description": "Все заявки\"  query param otdel_id - для получения заявок по отделу, доступно только для  админа",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/dto.RequestFull"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
@@ -375,55 +335,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests_otdel": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Получение запросов на отлов бродячих собак по отделу. Требуется параметр otdel_id в query, otdel_id находится в справочнике. Доступно только для районных администраторов.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Get Requests By Otdel",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Otdel ID",
-                        "name": "otdel_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.RequestFull"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при получении запросов.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/user/profile": {
             "get": {
                 "security": [
@@ -463,32 +374,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.Account": {
-            "description": "Структура для создания учетной записи пользователя. Все поля обязательны к заполнению",
-            "type": "object",
-            "properties": {
-                "full_name": {
-                    "description": "Полное имя или название организации",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "ID пользователя",
-                    "type": "string"
-                },
-                "login": {
-                    "description": "Логин для входа в систему, должен быть уникальным",
-                    "type": "string"
-                },
-                "password": {
-                    "description": "Пароль для входа в систему",
-                    "type": "string"
-                },
-                "role": {
-                    "description": "Роль пользователя, например, \"admin\", \"user\", \"otdel\" и т.д.",
-                    "type": "string"
-                }
-            }
-        },
         "dto.Applicant": {
             "description": "Заявитель. Поле name игнорируется при создании заявки.",
             "type": "object",

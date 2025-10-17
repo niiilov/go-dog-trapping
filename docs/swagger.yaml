@@ -91,8 +91,9 @@ definitions:
         type: string
       applicant:
         allOf:
-        - $ref: '#/definitions/dto.Applicant'
-        description: Заявитель ID находится в справочнике
+        - $ref: '#/definitions/dto.Source'
+        description: '"!!!!ВАЖНО название поля json applicant и source поменяты местами!!"Источник
+          информации от кого был получен запрос ID находится в справочнике'
       behavior:
         description: Поведение собаки
         type: string
@@ -114,9 +115,9 @@ definitions:
         type: string
       source:
         allOf:
-        - $ref: '#/definitions/dto.Source'
-        description: Источник информации от кого был получен запрос ID находится в
-          справочнике
+        - $ref: '#/definitions/dto.Applicant'
+        description: '"!!!!ВАЖНО название поля json applicant и source поменяты местами!!"Заявитель
+          ID находится в справочнике'
       status:
         description: Статус заявки (новая, в работе, выполнена, отменена) генерируется
           после создания заявки
@@ -387,6 +388,53 @@ paths:
       security:
       - BearerAuth: []
       summary: Download Request File URL
+      tags:
+      - Requests
+  /requests/upload_act:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загрузка акта выполненого отлова любой формат файла, доступно админу
+        и подрядчику.
+      parameters:
+      - description: Request Number
+        in: formData
+        name: number
+        required: true
+        type: string
+      - description: Request ID
+        in: formData
+        name: id
+        required: true
+        type: string
+      - description: Request Status
+        in: formData
+        name: status
+        required: true
+        type: string
+      - description: Act File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Файл успешно загружен.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Ошибка в данных запроса.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Ошибка при загрузке акта.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Upload Act File
       tags:
       - Requests
   /user/profile:

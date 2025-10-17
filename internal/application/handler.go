@@ -3,6 +3,8 @@ package application
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
@@ -13,13 +15,17 @@ type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, role_id string, err error)
 	SendRequest(request *dto.RequestFull) error
-	GetAllRequests(year string) ([]*dto.RequestFull, error)
-	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
+
+	UploadAct(req *dto.UploadActRequests, key string, filename string) error
+
+	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
+
+	GetAllRequests(year string) ([]*dto.RequestFull, error)
+	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	GetFileURL(objectKey string) string
-	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -175,4 +181,51 @@ func (h *Handlers) DowloadUrl(c *gin.Context) {
 	url := h.service.GetFileURL(filename)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
+}
+
+// @Summary Upload Act File
+// @Security BearerAuth
+// @Description Загрузка акта выполненого отлова любой формат файла, доступно админу и подрядчику.
+// @Tags Requests
+// @Accept multipart/form-data
+// @Produce json
+// @Param number formData string true "Request Number"
+// @Param id formData string true "Request ID"
+// @Param status formData string true "Request Status"
+// @Param file formData file true "Act File"
+// @Success 200 {object} dto.Response	"Файл успешно загружен."
+// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при загрузке акта."
+// @Router /requests/upload_act [post]
+func (h *Handlers) UploadAct(c *gin.Context) {
+
+	var req dto.UploadActRequests
+	req.ID = c.PostForm("id")
+	req.Number = c.PostForm("number")
+	req.Status = c.PostForm("status")
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка при получении файла."})
+		return
+	}
+
+	sharedDir := "/app/shared/"
+	filename := "act_" + req.Number + "_" + time.Now().Format("2006") + filepath.Ext(file.Filename)
+	fmt.Println(filename)
+
+	if err := c.SaveUploadedFile(file, sharedDir+filename); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при сохранении файла."})
+		return
+	}
+
+	if err = h.service.UploadAct(&req, filename, sharedDir+filename); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при загрузке акта."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Файл успешно загружен."})
 }

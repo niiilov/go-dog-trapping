@@ -335,6 +335,76 @@ const docTemplate = `{
                 }
             }
         },
+        "/requests/upload_act": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Загрузка акта выполненого отлова любой формат файла, доступно админу и подрядчику.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Upload Act File",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Request Number",
+                        "name": "number",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Request Status",
+                        "name": "status",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Act File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Файл успешно загружен.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при загрузке акта.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/profile": {
             "get": {
                 "security": [
@@ -502,10 +572,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "applicant": {
-                    "description": "Заявитель ID находится в справочнике",
+                    "description": "\"!!!!ВАЖНО название поля json applicant и source поменяты местами!!\"Источник информации от кого был получен запрос ID находится в справочнике",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/dto.Applicant"
+                            "$ref": "#/definitions/dto.Source"
                         }
                     ]
                 },
@@ -534,10 +604,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "source": {
-                    "description": "Источник информации от кого был получен запрос ID находится в справочнике",
+                    "description": "\"!!!!ВАЖНО название поля json applicant и source поменяты местами!!\"Заявитель ID находится в справочнике",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/dto.Source"
+                            "$ref": "#/definitions/dto.Applicant"
                         }
                     ]
                 },

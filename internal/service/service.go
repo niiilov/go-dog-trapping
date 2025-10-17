@@ -189,3 +189,21 @@ func (s *Service) GetUserProfile(userId string) (*dto.UserProfile, error) {
 func (s *Service) GetFileURL(objectKey string) string {
 	return s.storage.GetFileURL(objectKey)
 }
+
+func (s *Service) UploadAct(req *dto.UploadActRequests, key string, filename string) error {
+	if err := s.storage.UploadFile(context.TODO(), key, filename); err != nil {
+		//лог
+		fmt.Println("Error upload file to S3:", err)
+		return err
+	}
+	// Удаляем временный файл
+	os.Remove(filename)
+	var statusReq dto.ChangeStatusRequest
+	statusReq.ID = req.ID
+	statusReq.Status = req.Status
+	if err := s.ChangeStatusRequest(&statusReq); err != nil {
+		return err
+	}
+
+	return nil
+}

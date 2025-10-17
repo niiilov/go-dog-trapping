@@ -49,6 +49,7 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.POST("/api/auth/change-password", handlers.ChangePassword)
 	router.POST("/api/auth/refresh", handlers.Refresh)
 	router.POST("/api/user/change-profile-info", handlers.ChangeProfileInfo)
+	router.POST("/api/requests/upload-act", handlers.UploadAct)
 
 	router.POST("/api/requests/change-status", handlers.ChangeStatusRequest)
 

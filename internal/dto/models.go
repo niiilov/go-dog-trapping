@@ -128,3 +128,19 @@ type ResponseUrl struct {
 	Status string `json:"status"` // обычно ok  при ошибках error
 	Url    string `json:"url"`    // url на скаччивание файла
 }
+
+//UploadActRequests model info
+//@Description  Структура для получения данных при загрузке акта
+type UploadActRequests struct {
+	Status string `json:"status"` // обычно ok  при ошибках error
+	ID     string `json:"id"`     // ID заявки к которой прилагается акт
+	Number string `json:"number"` // Номер заявки к которой прилагается акт
+
+}
+
+//DownloadActResponse model info
+//@Description  Структура для ответа с где обычно ок и url
+type DownloadActResponse struct {
+	Status string `json:"status"` // обычно ok  при ошибках error
+	Url    string `json:"url"`    // url на скаччивание акта
+}

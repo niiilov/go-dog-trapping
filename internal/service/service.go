@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/niiilov/go-dog-trapping/internal/dto"
 	"github.com/niiilov/go-dog-trapping/internal/worker"
@@ -112,7 +113,7 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 		return err
 	}
 	sharedDir := "/app/shared/"
-	key := "zayavka_" + strconv.Itoa(number) + ".xlsx"
+	key := "zayavka_" + strconv.Itoa(number) + "_" + time.Now().Format("2006") + ".xlsx"
 	filename := sharedDir + key
 
 	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {

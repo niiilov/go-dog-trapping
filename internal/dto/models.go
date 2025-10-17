@@ -138,9 +138,10 @@ type UploadActRequests struct {
 
 }
 
-//DownloadActResponse model info
-//@Description  Структура для ответа с где обычно ок и url
-type DownloadActResponse struct {
-	Status string `json:"status"` // обычно ok  при ошибках error
-	Url    string `json:"url"`    // url на скаччивание акта
+//DownloadActRequest model info
+//@Description  Структура для получения данных при скачивании акта
+type DownloadActRequest struct {
+	Number string `json:"number"` // номер заявки
+	Year   string `json:"year"`   // год заявки
+
 }

@@ -164,18 +164,20 @@ func (h *Handlers) GetRequestsByOtdelFunc(c *gin.Context, otdel_id string, year 
 // @Tags Requests
 // @Produce json
 // @Param number query string true "Request Number"
+// @Param year query string true "Request Year"
 // @Success 200 {object} dto.ResponseUrl
 // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
-// @Router /requests/download_url [get]
-func (h *Handlers) DowloadUrl(c *gin.Context) {
+// @Router /requests/download_request [get]
+func (h *Handlers) DownloadRequest(c *gin.Context) {
 	number := c.Query("number")
+	year := c.Query("year")
 	fmt.Println(number)
 	if number == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
-	filename := "zayavka_" + number + ".xlsx"
+	filename := "zayavka_" + number + "_" + year + ".xlsx"
 
 	fmt.Println(filename)
 	url := h.service.GetFileURL(filename)
@@ -228,4 +230,31 @@ func (h *Handlers) UploadAct(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Файл успешно загружен."})
+}
+
+// @Summary Download Act File URL
+// @Security BearerAuth
+// @Description Получение URL для скачивания файла акта выполненого отлова в формате .docx. Требуется параметры number и year в query, номер заявки и год. Доступно для всех авторизованных пользователей.
+// @Tags Requests
+// @Produce json
+// @Param number query string true "Request Number"
+// @Param year query string true "Request Year"
+// @Success 200 {object} dto.ResponseUrl
+// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
+// @Router /requests/download_act [get]
+func (h *Handlers) DownloadAct(c *gin.Context) {
+	var req dto.DownloadActRequest
+	req.Number = c.Query("number")
+	req.Year = c.Query("year")
+
+	if req.Number == "" || req.Year == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+	filename := "act_" + req.Number + "_" + req.Year + ".docx"
+
+	url := h.service.GetFileURL(filename)
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
 }

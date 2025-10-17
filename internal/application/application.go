@@ -56,7 +56,8 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.GET("/api/requests", handlers.GetAllRequests)
 
 	router.GET("/api/user/profile", handlers.Profile)
-	router.GET("/api/requests/download_url", handlers.DowloadUrl)
+	router.GET("/api/requests/download_request", handlers.DownloadRequest)
+	router.GET("/api/requests/download_act", handlers.DownloadAct)
 
 	return router
 }

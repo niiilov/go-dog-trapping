@@ -289,7 +289,60 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/download_url": {
+        "/requests/download_act": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получение URL для скачивания файла акта выполненого отлова в формате .docx. Требуется параметры number и year в query, номер заявки и год. Доступно для всех авторизованных пользователей.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Download Act File URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Request Number",
+                        "name": "number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Request Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseUrl"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при получении запросов.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/requests/download_request": {
             "get": {
                 "security": [
                     {
@@ -309,6 +362,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Request Number",
                         "name": "number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Request Year",
+                        "name": "year",
                         "in": "query",
                         "required": true
                     }

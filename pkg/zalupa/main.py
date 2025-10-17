@@ -42,7 +42,7 @@ class RequestFull(BaseModel):
 
 @app.post("/generate")
 async def generate_doc(req: RequestFull):
-    filename = f"zayavka_{req.number}.xlsx"
+    filename = f"zayavka_{req.number}_{datetime.now().year}.xlsx"
     template = "tamplate.xlsx"
     # Передайте нужные параметры в функцию создания документа
 
@@ -60,7 +60,7 @@ async def generate_doc(req: RequestFull):
     generate_document(template, filename, data)
     print("Документ успешно создан:", filename)
     shared_dir = Path("/app/shared")
-    if os.path.exists(f"{shared_dir}/zayavka_{req.number}.xlsx"):
+    if os.path.exists(f"{shared_dir}/zayavka_{req.number}_{datetime.now().year}.xlsx"):
         return JSONResponse({"status": "ok"}, status_code=200)
     return JSONResponse({"error": "File not created"}, status_code=500)
 

@@ -360,7 +360,43 @@ paths:
       summary: Change Status Request
       tags:
       - Requests
-  /requests/download_url:
+  /requests/download_act:
+    get:
+      description: Получение URL для скачивания файла акта выполненого отлова в формате
+        .docx. Требуется параметры number и year в query, номер заявки и год. Доступно
+        для всех авторизованных пользователей.
+      parameters:
+      - description: Request Number
+        in: query
+        name: number
+        required: true
+        type: string
+      - description: Request Year
+        in: query
+        name: year
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ResponseUrl'
+        "400":
+          description: Ошибка в данных запроса.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Ошибка при получении запросов.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Download Act File URL
+      tags:
+      - Requests
+  /requests/download_request:
     get:
       description: Получение URL для скачивания файла заявки в формате .docx. Требуется
         параметр number в query, номер заявки. Доступно для всех авторизованных пользователей.
@@ -368,6 +404,11 @@ paths:
       - description: Request Number
         in: query
         name: number
+        required: true
+        type: string
+      - description: Request Year
+        in: query
+        name: year
         required: true
         type: string
       produces:

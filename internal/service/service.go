@@ -138,6 +138,7 @@ func (s *Service) GetRequestsByOtdel(otdel_id string, year string) ([]*dto.Reque
 	if err != nil {
 		return nil, err
 	}
+	go s.validateDelay(requests)
 	return requests, nil
 }
 
@@ -146,6 +147,7 @@ func (s *Service) GetAllRequests(year string) ([]*dto.RequestFull, error) {
 	if err != nil {
 		return nil, err
 	}
+	go s.validateDelay(requests)
 	return requests, nil
 }
 
@@ -207,4 +209,33 @@ func (s *Service) UploadAct(req *dto.UploadActRequests, key string, filename str
 	}
 
 	return nil
+}
+
+func (s *Service) validateDelay(requests []*dto.RequestFull) error {
+	twoWeeks := 14 * 24 * time.Hour
+
+	for _, req := range requests {
+		if req == nil {
+			continue
+		}
+		if req.Status == "Завершена" || req.Status == "Просрочена" {
+			continue
+		}
+		// если прошло больше двух недель с момента создания — меняем статус
+		if time.Since(req.CreatedAt) > twoWeeks {
+
+			statusReq := &dto.ChangeStatusRequest{
+				ID:     req.ID,
+				Status: "Просрочена", // <-- поменяйте на нужный вам статус
+			}
+
+			if err := s.repository.ChangeStatusRequest(statusReq); err != nil {
+				fmt.Println("failed to change status for request", req.ID, ":", err)
+				// продолжаем обработку остальных заявок
+			}
+		}
+	}
+
+	return nil
+
 }

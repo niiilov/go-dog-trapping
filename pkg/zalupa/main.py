@@ -47,14 +47,50 @@ class RequestMultiple(BaseModel):
     requests: List[RequestItem]
 
 
+def copy_images_to_sheet(source_sheet, target_sheet):
+    """
+    Копируем все изображения с исходного листа на целевой
+    """
+    try:
+        from openpyxl.drawing.image import Image
+        import io
+
+        print(f"Копируем изображения с {source_sheet.title} на {target_sheet.title}")
+
+        # Проверяем есть ли изображения на исходном листе
+        if hasattr(source_sheet, "_images") and source_sheet._images:
+            print(f"Найдено {len(source_sheet._images)} изображений")
+
+            for img in source_sheet._images:
+                try:
+                    # Создаем новое изображение из данных оригинала
+                    img_data = img.ref.getvalue()
+                    new_img = Image(io.BytesIO(img_data))
+
+                    # Копируем позицию и размер
+                    new_img.anchor = img.anchor
+                    new_img.width = img.width
+                    new_img.height = img.height
+
+                    # Добавляем на целевой лист
+                    target_sheet.add_image(new_img)
+                    print(f"✓ Изображение скопировано")
+
+                except Exception as e:
+                    print(f"✗ Ошибка копирования изображения: {e}")
+
+        else:
+            print("Изображений на исходном листе не найдено")
+
+    except Exception as e:
+        print(f"✗ Общая ошибка копирования изображений: {e}")
+
+
 def generate_single_document(
     template_path: str, output_path: str, data: Dict[str, Any]
 ):
     """
     Генерация Excel-документа на основе шаблона для одной заявки
-    :param template_path: путь к шаблону (xlsx)
-    :param output_path: путь для сохранения нового файла
-    :param data: словарь с данными {ячейка: значение}
     """
     wb = load_workbook(template_path)
     ws = wb.active
@@ -102,13 +138,7 @@ def generate_multiple_sheets_document(
 ):
     """
     Генерация Excel-документа с отдельными листами для каждой заявки
-    :param template_path: путь к шаблону (xlsx)
-    :param output_path: путь для сохранения нового файла
-    :param number: номер заявки
-    :param requests: список заявок
     """
-    from copy import copy
-
     wb = load_workbook(template_path)
     template_sheet = wb.active
 
@@ -133,6 +163,9 @@ def generate_multiple_sheets_document(
             current_sheet = wb.copy_worksheet(template_sheet)
             current_sheet.title = f"Заявка {i + 1}"
 
+            # ВАЖНО: Копируем изображения на новый лист
+            copy_images_to_sheet(template_sheet, current_sheet)
+
         # Данные для текущей заявки
         sheet_data = {
             "B15": f"Заявка № {number}-{i + 1}",
@@ -149,7 +182,6 @@ def generate_multiple_sheets_document(
         # Записываем данные на текущий лист
         for cell_address, value in sheet_data.items():
             try:
-                # Проверяем объединенные ячейки
                 merged_ranges = list(current_sheet.merged_cells.ranges)
                 target_cell = None
 
@@ -176,7 +208,7 @@ def generate_multiple_sheets_document(
                 except Exception as e2:
                     print(f"✗ Не удалось записать в ячейку {cell_address}: {e2}")
 
-    shared_dir = Path(".")
+    shared_dir = Path("/app/shared")
     wb.save(f"{shared_dir}/{output_path}")
     print(f"Документ с {len(requests)} листами создан: {output_path}")
 
@@ -188,7 +220,6 @@ async def generate_doc(req: RequestFull):
         filename = f"zayavka_{req.number}_{datetime.now().year}.xlsx"
         template = "tamplate.xlsx"
 
-        # Проверяем существование шаблона
         if not os.path.exists(template):
             return JSONResponse(
                 {"error": f"Template file {template} not found"}, status_code=500
@@ -228,7 +259,6 @@ async def generate_multiple_doc(req: RequestMultiple):
         filename = f"zayavka_{req.number}_{datetime.now().year}.xlsx"
         template = "tamplate.xlsx"
 
-        # Проверяем существование шаблона
         if not os.path.exists(template):
             return JSONResponse(
                 {"error": f"Template file {template} not found"}, status_code=500

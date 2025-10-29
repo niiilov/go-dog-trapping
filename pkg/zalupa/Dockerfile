@@ -2,6 +2,7 @@
 FROM python:3.13.7
 
 
+
 WORKDIR /app
 
 
@@ -14,6 +15,6 @@ RUN pip install -r requirements.txt
 
 
 
-EXPOSE 8000
+EXPOSE 8001
 
 CMD ["python", "main.py"]

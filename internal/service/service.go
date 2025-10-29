@@ -32,6 +32,8 @@ type repository interface {
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
+
+	GetRequestsByNumber(request_number []string) ([]*dto.RequestFull, error)
 }
 
 type storage interface {
@@ -238,4 +240,35 @@ func (s *Service) validateDelay(requests []*dto.RequestFull) error {
 
 	return nil
 
+}
+
+func (s *Service) GenerateMultiple(req *dto.GenerateMultipleRequest) (string, error) {
+	requests, err := s.repository.GetRequestsByNumber(req.Numbers)
+	if err != nil {
+		return "", err
+	}
+
+	reqs := dto.RequestForGeneratingSomething{
+		Requests: requests,
+		Number:   requests[0].Number,
+	}
+	if err := worker.SendRequestForGeneratingSomething(&reqs); err != nil {
+		return "", err
+	}
+	number := requests[0].Number
+	sharedDir := "/app/shared/"
+	key := "zayavka_" + number + "_" + time.Now().Format("2006") + ".xlsx"
+	filename := sharedDir + key
+
+	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {
+		//лог
+		fmt.Println("Error upload file to S3:", err)
+		return "", err
+	}
+
+	os.Remove(filename)
+
+	url := s.storage.GetFileURL(filename)
+
+	return url, nil
 }

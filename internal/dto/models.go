@@ -91,29 +91,23 @@ type Applicant struct {
 	Name string `json:"name,omitempty"` //Название заявителя игнорируется при создании заявки
 }
 
-// RequestForGenerating model info
-// @Description Структура для генерации заявки. Все поля обязательны к заполнению
-type RequestForGenerating struct {
-	Number        string `json:"number"`         //уникальный номер заявки ОБЯЗАТЕЛЕН
-	Applicant     string `json:"applicant_name"` //Заявитель ID находится в справочнике
-	Source        string `json:"source_name"`    //Источник информации от кого был получен запрос ID находится в справочнике
-	Address       string `json:"address"`        //Адрес, где была замечена бродячая собака
-	DogsCount     int    `json:"dogs_count"`     //Количество собак
-	Behavior      string `json:"behavior"`       //Поведение собаки
-	Urgency       string `json:"urgency"`        //срочность
-	ContactPerson string `json:"contact_person"` //Контактные данные
+// RequestForGeneratingMultiple model info
+// @Description Заявка на генерацию нескольких номеров.
+type GenerateMultipleRequest struct {
+	Numbers []string `json:"numbers,omitempty"` // номера заявок
+	Year    string   `json:"year,omitempty"`    // год заявки
 }
 
-//Response model info
-//@Description  Структура для ответа с где обычно ок и сообщние
+// Response model info
+// @Description  Структура для ответа с где обычно ок и сообщние
 type Response struct {
 	Status  string `json:"status"`  // обычно ok  при ошибках error
 	Message string `json:"message"` // просто сообщение
 
 }
 
-//Response model info
-//@Description  Структура для ответа с данными пользователя
+// Response model info
+// @Description  Структура для ответа с данными пользователя
 type AuthResponse struct {
 	Status  string      `json:"status"`  // обычно ok  при ошибках error
 	Message string      `json:"message"` // просто сообщение
@@ -122,15 +116,15 @@ type AuthResponse struct {
 
 }
 
-//ResponseUrl model info
-//@Description  Структура для ответа с где обычно ок и url
+// ResponseUrl model info
+// @Description  Структура для ответа с где обычно ок и url
 type ResponseUrl struct {
 	Status string `json:"status"` // обычно ok  при ошибках error
 	Url    string `json:"url"`    // url на скаччивание файла
 }
 
-//UploadActRequests model info
-//@Description  Структура для получения данных при загрузке акта
+// UploadActRequests model info
+// @Description  Структура для получения данных при загрузке акта
 type UploadActRequests struct {
 	Status string `json:"status"` // обычно ok  при ошибках error
 	ID     string `json:"id"`     // ID заявки к которой прилагается акт
@@ -138,8 +132,8 @@ type UploadActRequests struct {
 
 }
 
-//DownloadActRequest model info
-//@Description  Структура для получения данных при скачивании акта
+// DownloadActRequest model info
+// @Description  Структура для получения данных при скачивании акта
 type DownloadActRequest struct {
 	Number string `json:"number"` // номер заявки
 	Year   string `json:"year"`   // год заявки

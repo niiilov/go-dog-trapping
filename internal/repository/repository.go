@@ -43,6 +43,7 @@ func (r *Repository) CreateAccount(account *dto.Account) (string, error) {
 }
 
 func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role_id string, err error) {
+	fmt.Println("ТУТА")
 	query := sq.Select("id", "password_hash", "role_id").
 		From("users").
 		Where(sq.Eq{"login": account.Login}).
@@ -65,6 +66,7 @@ func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.Us
 	}
 
 	user.ID = id
+	fmt.Println(user, role_id)
 
 	return user, hashPass, role_id, nil
 }
@@ -215,6 +217,52 @@ func (r *Repository) GetAllRequests(year string) ([]*dto.RequestFull, error) {
 	sql, args, err := query.ToSql()
 	if err != nil {
 
+		return nil, err
+	}
+
+	rows, err := r.pg.Query(context.Background(), sql, args...)
+	if err != nil {
+		fmt.Println("Error querying requests:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var requests []*dto.RequestFull
+	for rows.Next() {
+		var req dto.RequestFull
+
+		err := rows.Scan(
+			&req.ID,
+			&req.Number,
+			&req.Source.ID, &req.Applicant.ID,
+			&req.Address,
+			&req.DogsCount,
+			&req.Behavior, &req.Urgency, &req.ContactPerson, &req.Status, &req.CreatedAt,
+			&req.Source.Name, &req.Applicant.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(err)
+		requests = append(requests, &req)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return requests, nil
+}
+
+func (r *Repository) GetRequestsByNumber(numbers []string) ([]*dto.RequestFull, error) {
+	query := sq.Select(
+		"id", "number", "source_id", "applicant_id", "address", "dogs_count", "behavior", "urgency", "contact_person", "status", "created_at",
+		"source_name", "applicant_name",
+	).
+		From("requests").
+		Where(sq.Eq{"number": numbers}).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
 		return nil, err
 	}
 

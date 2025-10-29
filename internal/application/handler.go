@@ -22,6 +22,8 @@ type Service interface {
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 
+	GenerateMultiple(req *dto.GenerateMultipleRequest) (string, error)
+
 	GetAllRequests(year string) ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
 	GetUserProfile(userId string) (*dto.UserProfile, error)
@@ -182,6 +184,20 @@ func (h *Handlers) DownloadRequest(c *gin.Context) {
 	fmt.Println(filename)
 	url := h.service.GetFileURL(filename)
 
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
+}
+
+func (h *Handlers) GenerateMultiple(c *gin.Context) {
+	var request dto.GenerateMultipleRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+	url, err := h.service.GenerateMultiple(&request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при генерации запросов."})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
 }
 

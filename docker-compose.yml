@@ -19,8 +19,6 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    
-
   worker:
     container_name: worker
 
@@ -38,9 +36,8 @@ services:
         max_attempts: 3
         delay: 5s
     build:
-        context: pkg/zalupa
-        dockerfile: Dockerfile
-        
+      context: pkg/zalupa
+      dockerfile: Dockerfile
 
 volumes:
   shared-data:

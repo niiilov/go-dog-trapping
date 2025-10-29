@@ -164,7 +164,6 @@ def generate_multiple_sheets_document(
             current_sheet.title = f"Заявка {i + 1}"
 
             # ВАЖНО: Копируем изображения на новый лист
-            print(f"Копируем изображения для листа {current_sheet.title}")
             copy_images_to_sheet(template_sheet, current_sheet)
 
         # Данные для текущей заявки
@@ -219,7 +218,7 @@ async def generate_doc(req: RequestFull):
     try:
         print(f"Получен запрос: {req}")
         filename = f"zayavka_{req.number}_{datetime.now().year}.xlsx"
-        template = "tamplate.xlsx"
+        template = "template.xlsx"
 
         if not os.path.exists(template):
             return JSONResponse(
@@ -258,7 +257,7 @@ async def generate_multiple_doc(req: RequestMultiple):
             return JSONResponse({"error": "No requests provided"}, status_code=400)
 
         filename = f"zayavka_{datetime.now().strftime('%d-%m-%Y')}.xlsx"
-        template = "tamplate.xlsx"
+        template = "template.xlsx"
 
         if not os.path.exists(template):
             return JSONResponse(

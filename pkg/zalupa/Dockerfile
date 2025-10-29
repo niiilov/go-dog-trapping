@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY main.py .
 COPY requirements.txt .
-COPY tamplate.xlsx .
+COPY template.xlsx .
 
 RUN pip install -r requirements.txt
 

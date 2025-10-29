@@ -193,6 +193,7 @@ func (h *Handlers) GenerateMultiple(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
+	fmt.Println("GenerateMultiple request:", request)
 	url, err := h.service.GenerateMultiple(&request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при генерации запросов."})

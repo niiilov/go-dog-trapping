@@ -33,7 +33,7 @@ type repository interface {
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
 
-	GetRequestsByNumber(request_number []string) ([]*dto.RequestFull, error)
+	GetRequestsByNumber(request_number []int) ([]*dto.RequestForGenerating, error)
 }
 
 type storage interface {
@@ -245,6 +245,8 @@ func (s *Service) validateDelay(requests []*dto.RequestFull) error {
 func (s *Service) GenerateMultiple(req *dto.GenerateMultipleRequest) (string, error) {
 	requests, err := s.repository.GetRequestsByNumber(req.Numbers)
 	if err != nil {
+
+		fmt.Println("Error getting requests by number:", err)
 		return "", err
 	}
 
@@ -252,12 +254,13 @@ func (s *Service) GenerateMultiple(req *dto.GenerateMultipleRequest) (string, er
 		Requests: requests,
 		Number:   requests[0].Number,
 	}
+	fmt.Println(req)
 	if err := worker.SendRequestForGeneratingSomething(&reqs); err != nil {
 		return "", err
 	}
-	number := requests[0].Number
+
 	sharedDir := "/app/shared/"
-	key := "zayavka_" + number + "_" + time.Now().Format("2006") + ".xlsx"
+	key := "zayavka_" + time.Now().Format("02-01-2006") + ".xlsx"
 	filename := sharedDir + key
 
 	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {
@@ -268,7 +271,7 @@ func (s *Service) GenerateMultiple(req *dto.GenerateMultipleRequest) (string, er
 
 	os.Remove(filename)
 
-	url := s.storage.GetFileURL(filename)
+	url := s.storage.GetFileURL(key)
 
 	return url, nil
 }

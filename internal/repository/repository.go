@@ -253,13 +253,14 @@ func (r *Repository) GetAllRequests(year string) ([]*dto.RequestFull, error) {
 	return requests, nil
 }
 
-func (r *Repository) GetRequestsByNumber(numbers []string) ([]*dto.RequestFull, error) {
-	query := sq.Select(
-		"id", "number", "source_id", "applicant_id", "address", "dogs_count", "behavior", "urgency", "contact_person", "status", "created_at",
-		"source_name", "applicant_name",
-	).
+func (r *Repository) GetRequestsByNumber(numbers []int) ([]*dto.RequestForGenerating, error) {
+	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", numbers)
+	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
 		From("requests").
-		Where(sq.Eq{"number": numbers}).
+		InnerJoin("request_sources ON requests.source_id = request_sources.id").
+		InnerJoin("applicants ON requests.applicant_id = applicants.id").
+		OrderBy("requests.created_at DESC").
+		Where(sq.Eq{"requests.number": numbers}).
 		PlaceholderFormat(sq.Dollar)
 	sql, args, err := query.ToSql()
 	if err != nil {
@@ -273,18 +274,18 @@ func (r *Repository) GetRequestsByNumber(numbers []string) ([]*dto.RequestFull, 
 	}
 	defer rows.Close()
 
-	var requests []*dto.RequestFull
+	var requests []*dto.RequestForGenerating
 	for rows.Next() {
-		var req dto.RequestFull
+		var req dto.RequestForGenerating
 
 		err := rows.Scan(
-			&req.ID,
+
 			&req.Number,
-			&req.Source.ID, &req.Applicant.ID,
+
 			&req.Address,
 			&req.DogsCount,
-			&req.Behavior, &req.Urgency, &req.ContactPerson, &req.Status, &req.CreatedAt,
-			&req.Source.Name, &req.Applicant.Name,
+			&req.Behavior, &req.Urgency, &req.ContactPerson,
+			&req.Source, &req.Applicant,
 		)
 		if err != nil {
 			return nil, err
@@ -295,6 +296,8 @@ func (r *Repository) GetRequestsByNumber(numbers []string) ([]*dto.RequestFull, 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
+	fmt.Println(requests)
 
 	return requests, nil
 }

@@ -42,6 +42,7 @@ func SendRequestForGeneratingSomething(reqData *dto.RequestForGeneratingSomethin
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
+	fmt.Println("Sending request with data:", string(jsonData))
 
 	client := &http.Client{}
 	resp, err := client.Post("http://worker:8001/generate-multiple", "application/json", bytes.NewBuffer(jsonData))

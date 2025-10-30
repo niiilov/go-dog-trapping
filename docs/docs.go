@@ -342,6 +342,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/requests/download_multi": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать массив ID заявок. Доступно только для районных администраторов.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Generate Multiple Requests",
+                "parameters": [
+                    {
+                        "description": "Generate Multiple Requests",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.GenerateMultipleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseUrl"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при генерации запросов.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/requests/download_request": {
             "get": {
                 "security": [
@@ -619,6 +670,23 @@ const docTemplate = `{
                 },
                 "status": {
                     "description": "Новый статус заявки (новая, в работе, выполнена, отменена)",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GenerateMultipleRequest": {
+            "description": "Заявка на генерацию нескольких номеров.",
+            "type": "object",
+            "properties": {
+                "numbers": {
+                    "description": "номера заявок",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "year": {
+                    "description": "год заявки",
                     "type": "string"
                 }
             }

@@ -82,6 +82,18 @@ definitions:
         description: Новый статус заявки (новая, в работе, выполнена, отменена)
         type: string
     type: object
+  dto.GenerateMultipleRequest:
+    description: Заявка на генерацию нескольких номеров.
+    properties:
+      numbers:
+        description: номера заявок
+        items:
+          type: integer
+        type: array
+      year:
+        description: год заявки
+        type: string
+    type: object
   dto.RequestFull:
     description: Полная информация о заявке на отлов бродячей собаки. Поля id, number,
       status и created_at игнорируются при создании заявки.
@@ -394,6 +406,39 @@ paths:
       security:
       - BearerAuth: []
       summary: Download Act File URL
+      tags:
+      - Requests
+  /requests/download_multi:
+    post:
+      consumes:
+      - application/json
+      description: Генерация нескольких заявок на отлов бродячих собак в одном файле.
+        Требуется передать массив ID заявок. Доступно только для районных администраторов.
+      parameters:
+      - description: Generate Multiple Requests
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GenerateMultipleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ResponseUrl'
+        "400":
+          description: Ошибка в данных запроса.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Ошибка при генерации запросов.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Generate Multiple Requests
       tags:
       - Requests
   /requests/download_request:

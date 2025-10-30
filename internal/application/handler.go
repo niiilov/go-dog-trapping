@@ -187,6 +187,17 @@ func (h *Handlers) DownloadRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
 }
 
+// @Summary Generate Multiple Requests
+// @Security BearerAuth
+// @Description Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать массив ID заявок. Доступно только для районных администраторов.
+// @Tags Requests
+// @Accept json
+// @Produce json
+// @Param request body dto.GenerateMultipleRequest true "Generate Multiple Requests"
+// @Success 200 {object} dto.ResponseUrl
+// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при генерации запросов."
+// @Router /requests/download_multi [post]
 func (h *Handlers) GenerateMultiple(c *gin.Context) {
 	var request dto.GenerateMultipleRequest
 	if err := c.ShouldBindJSON(&request); err != nil {

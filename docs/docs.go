@@ -678,15 +678,12 @@ const docTemplate = `{
             "description": "Заявка на генерацию нескольких номеров.",
             "type": "object",
             "properties": {
-                "numbers": {
-                    "description": "номера заявок",
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "date_from": {
+                    "description": "Дата с которой нужно выбрать заявки",
+                    "type": "string"
                 },
-                "year": {
-                    "description": "год заявки",
+                "date_to": {
+                    "description": "Дата по которую нужно выбрать заявки",
                     "type": "string"
                 }
             }

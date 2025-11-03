@@ -85,13 +85,11 @@ definitions:
   dto.GenerateMultipleRequest:
     description: Заявка на генерацию нескольких номеров.
     properties:
-      numbers:
-        description: номера заявок
-        items:
-          type: integer
-        type: array
-      year:
-        description: год заявки
+      date_from:
+        description: Дата с которой нужно выбрать заявки
+        type: string
+      date_to:
+        description: Дата по которую нужно выбрать заявки
         type: string
     type: object
   dto.RequestFull:

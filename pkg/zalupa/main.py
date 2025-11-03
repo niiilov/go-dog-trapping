@@ -168,7 +168,7 @@ def generate_multiple_sheets_document(
 
         # Данные для текущей заявки
         sheet_data = {
-            "B15": f"Заявка № {number}-{i + 1}",
+            "B15": f"Заявка № {i+1}",
             "B12": datetime.now().strftime("%d.%m.%Y"),
             "B20": request_item.source_name,
             "D20": request_item.applicant_name,

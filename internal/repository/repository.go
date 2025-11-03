@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -253,14 +254,18 @@ func (r *Repository) GetAllRequests(year string) ([]*dto.RequestFull, error) {
 	return requests, nil
 }
 
-func (r *Repository) GetRequestsByNumber(numbers []int) ([]*dto.RequestForGenerating, error) {
-	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", numbers)
+func (r *Repository) GetRequestsByNumber(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error) {
+	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", dateFrom)
+
 	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
 		From("requests").
 		InnerJoin("request_sources ON requests.source_id = request_sources.id").
 		InnerJoin("applicants ON requests.applicant_id = applicants.id").
 		OrderBy("requests.created_at DESC").
-		Where(sq.Eq{"requests.number": numbers}).
+		Where(sq.And{
+			sq.GtOrEq{"requests.created_at": dateFrom},
+			sq.LtOrEq{"requests.created_at": dateTo},
+		}).
 		PlaceholderFormat(sq.Dollar)
 	sql, args, err := query.ToSql()
 	if err != nil {

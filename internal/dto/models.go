@@ -94,8 +94,8 @@ type Applicant struct {
 // RequestForGeneratingMultiple model info
 // @Description Заявка на генерацию нескольких номеров.
 type GenerateMultipleRequest struct {
-	Numbers []int  `json:"numbers,omitempty"` // номера заявок
-	Year    string `json:"year,omitempty"`    // год заявки
+	DateFrom *time.Time `json:"date_from"` // Дата с которой нужно выбрать заявки
+	DateTo   *time.Time `json:"date_to"`   // Дата по которую нужно выбрать заявки
 }
 
 // Response model info

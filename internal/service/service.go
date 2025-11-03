@@ -33,7 +33,7 @@ type repository interface {
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
 
-	GetRequestsByNumber(request_number []int) ([]*dto.RequestForGenerating, error)
+	GetRequestsByNumber(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error)
 }
 
 type storage interface {
@@ -243,7 +243,7 @@ func (s *Service) validateDelay(requests []*dto.RequestFull) error {
 }
 
 func (s *Service) GenerateMultiple(req *dto.GenerateMultipleRequest) (string, error) {
-	requests, err := s.repository.GetRequestsByNumber(req.Numbers)
+	requests, err := s.repository.GetRequestsByNumber(req.DateFrom, req.DateTo)
 	if err != nil {
 
 		fmt.Println("Error getting requests by number:", err)

@@ -336,7 +336,58 @@
                 }
             }
         },
-        "/requests/download_multi": {
+        "/requests/download_multiDate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать диапазон дат. Доступно только для районных администраторов.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Generate Multiple Requests By Date",
+                "parameters": [
+                    {
+                        "description": "Generate Multiple Requests By Date",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.GenerateMultipleRequestByDate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseUrl"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при генерации запросов.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/requests/download_multiID": {
             "post": {
                 "security": [
                     {
@@ -353,15 +404,15 @@
                 "tags": [
                     "Requests"
                 ],
-                "summary": "Generate Multiple Requests",
+                "summary": "Generate Multiple Requests By IDs",
                 "parameters": [
                     {
-                        "description": "Generate Multiple Requests",
+                        "description": "Generate Multiple Requests By IDs",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.GenerateMultipleRequest"
+                            "$ref": "#/definitions/dto.GenerateMultipleRequestByID"
                         }
                     }
                 ],
@@ -668,8 +719,8 @@
                 }
             }
         },
-        "dto.GenerateMultipleRequest": {
-            "description": "Заявка на генерацию нескольких номеров.",
+        "dto.GenerateMultipleRequestByDate": {
+            "description": "генерация документа с несколькими заявками.",
             "type": "object",
             "properties": {
                 "date_from": {
@@ -679,6 +730,19 @@
                 "date_to": {
                     "description": "Дата по которую нужно выбрать заявки",
                     "type": "string"
+                }
+            }
+        },
+        "dto.GenerateMultipleRequestByID": {
+            "description": "генерация документа с несколькими заявками по ID",
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "description": "Список ID заявок которые нужно включить в документ",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

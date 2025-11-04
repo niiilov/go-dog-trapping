@@ -91,11 +91,17 @@ type Applicant struct {
 	Name string `json:"name,omitempty"` //Название заявителя игнорируется при создании заявки
 }
 
-// RequestForGeneratingMultiple model info
-// @Description Заявка на генерацию нескольких номеров.
-type GenerateMultipleRequest struct {
+// RequestForGeneratingMultipleByDate model info
+// @Description генерация документа с несколькими заявками.
+type GenerateMultipleRequestByDate struct {
 	DateFrom *time.Time `json:"date_from"` // Дата с которой нужно выбрать заявки
 	DateTo   *time.Time `json:"date_to"`   // Дата по которую нужно выбрать заявки
+}
+
+// GenerateMultipleRequestByID model info
+// @Description генерация документа с несколькими заявками по ID
+type GenerateMultipleRequestByID struct {
+	IDs []string `json:"ids"` // Список ID заявок которые нужно включить в документ
 }
 
 // Response model info

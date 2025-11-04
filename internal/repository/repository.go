@@ -254,7 +254,7 @@ func (r *Repository) GetAllRequests(year string) ([]*dto.RequestFull, error) {
 	return requests, nil
 }
 
-func (r *Repository) GetRequestsByNumber(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error) {
+func (r *Repository) GetRequestsByDate(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error) {
 	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", dateFrom)
 
 	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
@@ -266,6 +266,56 @@ func (r *Repository) GetRequestsByNumber(dateFrom *time.Time, dateTo *time.Time)
 			sq.GtOrEq{"requests.created_at": dateFrom},
 			sq.LtOrEq{"requests.created_at": dateTo},
 		}).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.pg.Query(context.Background(), sql, args...)
+	if err != nil {
+		fmt.Println("Error querying requests:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var requests []*dto.RequestForGenerating
+	for rows.Next() {
+		var req dto.RequestForGenerating
+
+		err := rows.Scan(
+
+			&req.Number,
+
+			&req.Address,
+			&req.DogsCount,
+			&req.Behavior, &req.Urgency, &req.ContactPerson,
+			&req.Source, &req.Applicant,
+		)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(err)
+		requests = append(requests, &req)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	fmt.Println(requests)
+
+	return requests, nil
+}
+
+func (r *Repository) GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error) {
+	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", reqIDs)
+
+	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
+		From("requests").
+		InnerJoin("request_sources ON requests.source_id = request_sources.id").
+		InnerJoin("applicants ON requests.applicant_id = applicants.id").
+		OrderBy("requests.created_at DESC").
+		Where(sq.Eq{"requests.id": reqIDs}).
 		PlaceholderFormat(sq.Dollar)
 	sql, args, err := query.ToSql()
 	if err != nil {

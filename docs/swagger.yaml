@@ -82,8 +82,8 @@ definitions:
         description: Новый статус заявки (новая, в работе, выполнена, отменена)
         type: string
     type: object
-  dto.GenerateMultipleRequest:
-    description: Заявка на генерацию нескольких номеров.
+  dto.GenerateMultipleRequestByDate:
+    description: генерация документа с несколькими заявками.
     properties:
       date_from:
         description: Дата с которой нужно выбрать заявки
@@ -91,6 +91,15 @@ definitions:
       date_to:
         description: Дата по которую нужно выбрать заявки
         type: string
+    type: object
+  dto.GenerateMultipleRequestByID:
+    description: генерация документа с несколькими заявками по ID
+    properties:
+      ids:
+        description: Список ID заявок которые нужно включить в документ
+        items:
+          type: string
+        type: array
     type: object
   dto.RequestFull:
     description: Полная информация о заявке на отлов бродячей собаки. Поля id, number,
@@ -406,19 +415,19 @@ paths:
       summary: Download Act File URL
       tags:
       - Requests
-  /requests/download_multi:
+  /requests/download_multiDate:
     post:
       consumes:
       - application/json
       description: Генерация нескольких заявок на отлов бродячих собак в одном файле.
-        Требуется передать массив ID заявок. Доступно только для районных администраторов.
+        Требуется передать диапазон дат. Доступно только для районных администраторов.
       parameters:
-      - description: Generate Multiple Requests
+      - description: Generate Multiple Requests By Date
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.GenerateMultipleRequest'
+          $ref: '#/definitions/dto.GenerateMultipleRequestByDate'
       produces:
       - application/json
       responses:
@@ -436,7 +445,40 @@ paths:
             $ref: '#/definitions/dto.Response'
       security:
       - BearerAuth: []
-      summary: Generate Multiple Requests
+      summary: Generate Multiple Requests By Date
+      tags:
+      - Requests
+  /requests/download_multiID:
+    post:
+      consumes:
+      - application/json
+      description: Генерация нескольких заявок на отлов бродячих собак в одном файле.
+        Требуется передать массив ID заявок. Доступно только для районных администраторов.
+      parameters:
+      - description: Generate Multiple Requests By IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GenerateMultipleRequestByID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ResponseUrl'
+        "400":
+          description: Ошибка в данных запроса.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Ошибка при генерации запросов.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Generate Multiple Requests By IDs
       tags:
       - Requests
   /requests/download_request:

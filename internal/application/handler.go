@@ -22,7 +22,8 @@ type Service interface {
 	ChangePassword(req *dto.ChangePasswordRequest) error
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 
-	GenerateMultiple(req *dto.GenerateMultipleRequest) (string, error)
+	GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate) (string, error)
+	GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (string, error)
 
 	GetAllRequests(year string) ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
@@ -187,25 +188,51 @@ func (h *Handlers) DownloadRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
 }
 
-// @Summary Generate Multiple Requests
+// @Summary Generate Multiple Requests By Date
 // @Security BearerAuth
-// @Description Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать массив ID заявок. Доступно только для районных администраторов.
+// @Description Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать диапазон дат. Доступно только для районных администраторов.
 // @Tags Requests
 // @Accept json
 // @Produce json
-// @Param request body dto.GenerateMultipleRequest true "Generate Multiple Requests"
+// @Param request body dto.GenerateMultipleRequestByDate true "Generate Multiple Requests By Date"
 // @Success 200 {object} dto.ResponseUrl
 // @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при генерации запросов."
-// @Router /requests/download_multi [post]
-func (h *Handlers) GenerateMultiple(c *gin.Context) {
-	var request dto.GenerateMultipleRequest
+// @Router /requests/download_multiDate [post]
+func (h *Handlers) GenerateMultipleByDate(c *gin.Context) {
+	var request dto.GenerateMultipleRequestByDate
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
 	fmt.Println("GenerateMultiple request:", request)
-	url, err := h.service.GenerateMultiple(&request)
+	url, err := h.service.GenerateMultipleByDate(&request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при генерации запросов."})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
+}
+
+// @Summary Generate Multiple Requests By IDs
+// @Security BearerAuth
+// @Description Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать массив ID заявок. Доступно только для районных администраторов.
+// @Tags Requests
+// @Accept json
+// @Produce json
+// @Param request body dto.GenerateMultipleRequestByID true "Generate Multiple Requests By IDs"
+// @Success 200 {object} dto.ResponseUrl
+// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при генерации запросов."
+// @Router /requests/download_multiID [post]
+func (h *Handlers) GenerateMultipleByIDs(c *gin.Context) {
+	var request dto.GenerateMultipleRequestByID
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+		return
+	}
+	fmt.Println("GenerateMultiple request:", request)
+	url, err := h.service.GenerateMultipleByIDs(&request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при генерации запросов."})
 		return

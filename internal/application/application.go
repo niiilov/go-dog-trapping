@@ -51,7 +51,8 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.POST("/api/user/change-profile-info", handlers.ChangeProfileInfo)
 	router.POST("/api/requests/upload-act", handlers.UploadAct)
 
-	router.POST("/api/request/download_multi", handlers.GenerateMultiple)
+	router.POST("/api/request/download_multiDate", handlers.GenerateMultipleByDate)
+	router.POST("/api/request/download_multiID", handlers.GenerateMultipleByIDs)
 
 	router.POST("/api/requests/change-status", handlers.ChangeStatusRequest)
 

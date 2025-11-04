@@ -33,7 +33,8 @@ type repository interface {
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
 
-	GetRequestsByNumber(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error)
+	GetRequestsByDate(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error)
+	GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error)
 }
 
 type storage interface {
@@ -242,8 +243,42 @@ func (s *Service) validateDelay(requests []*dto.RequestFull) error {
 
 }
 
-func (s *Service) GenerateMultiple(req *dto.GenerateMultipleRequest) (string, error) {
-	requests, err := s.repository.GetRequestsByNumber(req.DateFrom, req.DateTo)
+func (s *Service) GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate) (string, error) {
+	requests, err := s.repository.GetRequestsByDate(req.DateFrom, req.DateTo)
+	if err != nil {
+
+		fmt.Println("Error getting requests by number:", err)
+		return "", err
+	}
+
+	reqs := dto.RequestForGeneratingSomething{
+		Requests: requests,
+		Number:   requests[0].Number,
+	}
+	fmt.Println(req)
+	if err := worker.SendRequestForGeneratingSomething(&reqs); err != nil {
+		return "", err
+	}
+
+	sharedDir := "/app/shared/"
+	key := "zayavka_" + time.Now().Format("02-01-2006") + ".xlsx"
+	filename := sharedDir + key
+
+	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {
+		//лог
+		fmt.Println("Error upload file to S3:", err)
+		return "", err
+	}
+
+	os.Remove(filename)
+
+	url := s.storage.GetFileURL(key)
+
+	return url, nil
+}
+
+func (s *Service) GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (string, error) {
+	requests, err := s.repository.GetRequestsByIDs(req.IDs)
 	if err != nil {
 
 		fmt.Println("Error getting requests by number:", err)

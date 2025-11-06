@@ -3,8 +3,9 @@ package dto
 // RequestForGeneratingSomething model info
 // @Description Структура для генерации несколько заявок. Все поля обязательны к заполнению
 type RequestForGeneratingSomething struct {
-	Requests []*RequestForGenerating `json:"requests"` // Список заявок
-	Number   string                  `json:"number"`   // Номер заявки
+	Requests []*RequestForGenerating `json:"rows"`      // Список заявок
+	Number   string                  `json:"number"`    // Номер заявки
+	StartRow int                     `json:"start_row"` // Начальная строка для вставки данных в шаблон
 }
 
 // RequestForGenerating model info
@@ -19,3 +20,5 @@ type RequestForGenerating struct {
 	Urgency       string `json:"urgency"`        //срочность
 	ContactPerson string `json:"contact_person"` //Контактные данные
 }
+
+var NumberOfRequests = 1

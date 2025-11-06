@@ -519,19 +519,64 @@ def generate_document_multiple(template_path, output_path, rows, start_row=20, h
             except Exception:
                 pass
 
-    # Normalize row heights for inserted rows: use reference from row above start_row if available
-    ref_row = start_row - 1 if start_row > 1 else template_row_idx
-    ref_rd = ws.row_dimensions.get(ref_row)
-    ref_height = None
-    if ref_rd is not None:
-        ref_height = getattr(ref_rd, "height", None)
-    if ref_height is None:
-        ref_height = template_row_attrs.get("height")
-    if ref_height is not None:
-        for i in range(len(rows)):
-            rnum = start_row + i
+    # Auto-fit row heights for inserted rows based on content and column widths
+    # We enable wrap_text and estimate required height using font size and chars per line approximation.
+    for i in range(len(rows)):
+        rnum = start_row + i
+        max_height = 0
+        for col in range(1, orig_max_col + 1):
+            cell = ws.cell(row=rnum, column=col)
+            val = cell.value
+            if val is None:
+                continue
+            # ensure text wraps so we can calculate height
             try:
-                ws.row_dimensions[rnum].height = ref_height
+                if getattr(cell, 'alignment', None) is None:
+                    cell.alignment = Alignment(wrap_text=True)
+                else:
+                    # copy alignment to avoid mutating shared style
+                    a = copy(cell.alignment)
+                    a.wrap_text = True
+                    cell.alignment = a
+            except Exception:
+                pass
+
+            text = str(val)
+            # split lines by explicit newlines, then estimate wrapped lines per segment
+            parts = text.split('\n')
+            total_lines = 0
+            for part in parts:
+                part_len = len(part)
+                # get column width in characters; fall back to 10 if not set
+                try:
+                    col_w = ws.column_dimensions[get_column_letter(col)].width
+                    if col_w is None:
+                        chars_per_line = 10
+                    else:
+                        # Excel column width roughly equals number of '0' chars; use it directly
+                        chars_per_line = max(1, int(col_w))
+                except Exception:
+                    chars_per_line = 10
+
+                # estimate wrapped lines
+                wrapped = (part_len + chars_per_line - 1) // chars_per_line if part_len > 0 else 1
+                total_lines += max(1, wrapped)
+
+            # determine font size (points); default to 11
+            try:
+                fsize = getattr(cell.font, 'size', None) or 11
+            except Exception:
+                fsize = 11
+
+            # approximate line height multiplier (points per line)
+            line_height = float(fsize) * 1.25
+            height = total_lines * line_height
+            if height > max_height:
+                max_height = height
+
+        if max_height > 0:
+            try:
+                ws.row_dimensions[rnum].height = max_height
             except Exception:
                 pass
 
@@ -544,8 +589,8 @@ def generate_document_multiple(template_path, output_path, rows, start_row=20, h
         ws.insert_rows(next_row, 1)
     except Exception:
         pass
-
-    wb.save(output_path)
+    shared_dir = Path("/app/shared")
+    wb.save(f"{shared_dir}/{output_path}")
 
 def _apply_style(target, style: dict):
     """Apply saved style dict to target cell robustly."""
@@ -579,7 +624,7 @@ async def generate_insert_doc(req: RequestMultipleInsert):
     try:
         print(f"Получен insert-запрос: {req}")
 
-        filename = f"zayavka_{req.number}_{datetime.now().year}_insert.xlsx"
+        filename = f"zayavka_{req.number}_{datetime.now().year}.xlsx"
         # template is expected in repo root
         repo_root = Path(".")
         template_path = repo_root / "templateV1.xlsx"

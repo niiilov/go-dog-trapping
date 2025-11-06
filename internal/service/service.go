@@ -253,7 +253,8 @@ func (s *Service) GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate)
 
 	reqs := dto.RequestForGeneratingSomething{
 		Requests: requests,
-		Number:   requests[0].Number,
+		Number:   strconv.Itoa(dto.NumberOfRequests),
+		StartRow: 20,
 	}
 	fmt.Println(req)
 	if err := worker.SendRequestForGeneratingSomething(&reqs); err != nil {
@@ -261,7 +262,7 @@ func (s *Service) GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate)
 	}
 
 	sharedDir := "/app/shared/"
-	key := "zayavka_" + time.Now().Format("02-01-2006") + ".xlsx"
+	key := "zayavka_" + time.Now().Format("2006") + ".xlsx"
 	filename := sharedDir + key
 
 	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {
@@ -269,7 +270,7 @@ func (s *Service) GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate)
 		fmt.Println("Error upload file to S3:", err)
 		return "", err
 	}
-
+	dto.NumberOfRequests++
 	os.Remove(filename)
 
 	url := s.storage.GetFileURL(key)
@@ -287,15 +288,17 @@ func (s *Service) GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (s
 
 	reqs := dto.RequestForGeneratingSomething{
 		Requests: requests,
-		Number:   requests[0].Number,
+		Number:   strconv.Itoa(dto.NumberOfRequests),
+		StartRow: 20,
 	}
+
 	fmt.Println(req)
 	if err := worker.SendRequestForGeneratingSomething(&reqs); err != nil {
 		return "", err
 	}
 
 	sharedDir := "/app/shared/"
-	key := "zayavka_" + time.Now().Format("02-01-2006") + ".xlsx"
+	key := "zayavka_" + reqs.Number + "_" + time.Now().Format("2006") + ".xlsx"
 	filename := sharedDir + key
 
 	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {
@@ -303,7 +306,7 @@ func (s *Service) GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (s
 		fmt.Println("Error upload file to S3:", err)
 		return "", err
 	}
-
+	dto.NumberOfRequests++
 	os.Remove(filename)
 
 	url := s.storage.GetFileURL(key)

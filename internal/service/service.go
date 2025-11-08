@@ -262,7 +262,7 @@ func (s *Service) GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate)
 	}
 
 	sharedDir := "/app/shared/"
-	key := "zayavka_" + time.Now().Format("2006") + ".xlsx"
+	key := "zayavka_" + reqs.Number + "_" + time.Now().Format("02-01-2006") + ".xlsx"
 	filename := sharedDir + key
 
 	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {
@@ -298,7 +298,7 @@ func (s *Service) GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (s
 	}
 
 	sharedDir := "/app/shared/"
-	key := "zayavka_" + reqs.Number + "_" + time.Now().Format("2006") + ".xlsx"
+	key := "zayavka_" + reqs.Number + "_" + time.Now().Format("02-01-2006") + ".xlsx"
 	filename := sharedDir + key
 
 	if err = s.storage.UploadFile(context.TODO(), key, filename); err != nil {

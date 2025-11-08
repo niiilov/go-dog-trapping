@@ -624,7 +624,7 @@ async def generate_insert_doc(req: RequestMultipleInsert):
     try:
         print(f"Получен insert-запрос: {req}")
 
-        filename = f"zayavka_{req.number}_{datetime.now().year}.xlsx"
+        filename = f"zayavka_{req.number}_{datetime.now().strftime('%d-%m-%Y')}.xlsx"
         # template is expected in repo root
         repo_root = Path(".")
         template_path = repo_root / "templateV1.xlsx"

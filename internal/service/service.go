@@ -35,6 +35,8 @@ type repository interface {
 
 	GetRequestsByDate(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error)
 	GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error)
+
+	NewApplicant(name string) (string, error)
 }
 
 type storage interface {
@@ -91,6 +93,18 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 	err := validate.Validate(request)
 	if err != nil {
 		return ErrInvalidData
+	}
+	fmt.Println(request, "ПРОВЕРКАА ККАСТОМАВ")
+	if request.CustomApplicant != "" {
+		fmt.Println(request.CustomApplicant, "ПРОВЕРКАА ")
+		id, err := s.repository.NewApplicant(request.CustomApplicant)
+		if err != nil {
+			return err
+		}
+		fmt.Println("ID кастома", id)
+		request.Applicant = dto.Applicant{
+			ID: id,
+		}
 	}
 
 	number, err := s.repository.SendRequest(request)

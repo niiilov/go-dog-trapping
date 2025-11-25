@@ -84,6 +84,7 @@ func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {
 		fmt.Println(err)
 		return 0, err
 	}
+	fmt.Println("ЗАПРОС", sql)
 
 	var number int
 
@@ -421,4 +422,27 @@ func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
 		return nil, err
 	}
 	return &profile, nil
+}
+
+func (r *Repository) NewApplicant(name string) (string, error) {
+
+	query := sq.Insert("applicants").
+		Columns("name").
+		Values(name).
+		Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar)
+
+	var id string
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return "", err
+	}
+
+	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+
 }

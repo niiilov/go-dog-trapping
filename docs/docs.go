@@ -780,6 +780,10 @@ const docTemplate = `{
                     "description": "Дата и время создания заявки генерируется автоматически",
                     "type": "string"
                 },
+                "custom_source": {
+                    "description": "ручной ввод сведений для заявителя",
+                    "type": "string"
+                },
                 "dogs_count": {
                     "description": "Количество собак",
                     "type": "integer"

@@ -95,18 +95,16 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 		return ErrInvalidData
 	}
 	fmt.Println(request, "ПРОВЕРКАА ККАСТОМАВ")
-	if request.CustomApplicant != "" {
-		fmt.Println(request.CustomApplicant, "ПРОВЕРКАА ")
-		id, err := s.repository.NewApplicant(request.CustomApplicant)
-		if err != nil {
-			return err
-		}
-		fmt.Println("ID кастома", id)
-		request.Applicant = dto.Applicant{
-			ID: id,
-		}
-	}
 
+	fmt.Println(request.Applicant.Name, "ПРОВЕРКАА ")
+	id, err := s.repository.NewApplicant(request.Applicant.Name)
+	if err != nil {
+		return err
+	}
+	fmt.Println("ID кастома", id)
+	request.Applicant = dto.Applicant{
+		ID: id,
+	}
 	number, err := s.repository.SendRequest(request)
 	if err != nil {
 		return err

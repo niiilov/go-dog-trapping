@@ -64,18 +64,17 @@ type ChangeStatusRequest struct {
 // RequestFull model info
 // @Description Полная информация о заявке на отлов бродячей собаки. Поля id, number, status и created_at игнорируются при создании заявки.
 type RequestFull struct {
-	ID              string    `json:"id"`             //уникальный идентификатор заявки при Post запросе не указывается
-	Number          string    `json:"number"`         //уникальный номер заявки, генерируется автоматически при создании заявки
-	Source          Source    `json:"applicant"`      //"!!!!ВАЖНО название поля json applicant и source поменяты местами!!"Источник информации от кого был получен запрос ID находится в справочнике
-	Applicant       Applicant `json:"source"`         //"!!!!ВАЖНО название поля json applicant и source поменяты местами!!"Заявитель ID находится в справочнике
-	Address         string    `json:"address"`        //Адрес, где была замечена бродячая собака
-	DogsCount       int       `json:"dogs_count"`     //Количество собак
-	Behavior        string    `json:"behavior"`       //Поведение собаки
-	Urgency         string    `json:"urgency"`        //срочность
-	ContactPerson   string    `json:"contact_person"` //Контактные данные
-	Status          string    `json:"status"`         //Статус заявки (новая, в работе, выполнена, отменена) генерируется после создания заявки
-	CreatedAt       time.Time `json:"created_at"`     //Дата и время создания заявки генерируется автоматически
-	CustomApplicant string    `json:"custom_source"`  //ручной ввод сведений для заявителя
+	ID            string    `json:"id"`             //уникальный идентификатор заявки при Post запросе не указывается
+	Number        string    `json:"number"`         //уникальный номер заявки, генерируется автоматически при создании заявки
+	Source        Source    `json:"applicant"`      //"!!!!ВАЖНО название поля json applicant и source поменяты местами!!"Источник информации от кого был получен запрос ID находится в справочнике
+	Applicant     Applicant `json:"source"`         //"!!!!ВАЖНО название поля json applicant и source поменяты местами!!"Заявитель ID находится в справочнике
+	Address       string    `json:"address"`        //Адрес, где была замечена бродячая собака
+	DogsCount     int       `json:"dogs_count"`     //Количество собак
+	Behavior      string    `json:"behavior"`       //Поведение собаки
+	Urgency       string    `json:"urgency"`        //срочность
+	ContactPerson string    `json:"contact_person"` //Контактные данные
+	Status        string    `json:"status"`         //Статус заявки (новая, в работе, выполнена, отменена) генерируется после создания заявки
+	CreatedAt     time.Time `json:"created_at"`     //Дата и время создания заявки генерируется автоматически
 
 }
 

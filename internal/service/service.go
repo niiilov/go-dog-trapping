@@ -32,7 +32,7 @@ type repository interface {
 	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
-
+	DeleteRequest(reqID string) error
 	GetRequestsByDate(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error)
 	GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error)
 
@@ -165,7 +165,10 @@ func (s *Service) GetAllRequests(year string) ([]*dto.RequestFull, error) {
 	go s.validateDelay(requests)
 	return requests, nil
 }
+func (s *Service) DeleteRequest(reqID string) error {
 
+	return s.repository.DeleteRequest(reqID)
+}
 func (s *Service) ChangeProfileInfo(req *dto.ChangeProfileRequest) error {
 	err := s.repository.ChangeProfileInfo(req)
 	return err

@@ -15,7 +15,7 @@ type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
 	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, role_id string, err error)
 	SendRequest(request *dto.RequestFull) error
-
+	DeleteRequest(reqID string) error
 	UploadAct(req *dto.UploadActRequests, key string, filename string) error
 
 	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
@@ -159,6 +159,28 @@ func (h *Handlers) GetRequestsByOtdelFunc(c *gin.Context, otdel_id string, year 
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
+}
+
+// @Summary Delete Request
+// @Security BearerAuth
+// @Description Удаление заявки на отлов бродячей собаки по ID. Доступно только для районных администраторов.
+// @Tags Requests
+// @Produce json
+// @Param id path string true "Request ID"
+// @Success 200 {object} dto.Response	"Заявка успешно удалена."
+// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
+// @Failure 500 {object} dto.Response	"Ошибка при удалении заявки."
+// @Router /requests/{id} [delete]
+func (h *Handlers) DeleteRequest(c *gin.Context) {
+	reqID := c.Param("id")
+
+	if err := h.service.DeleteRequest(reqID); err != nil {
+		// опять логи
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при удалении заявки."})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Заявка успешно удалена."})
 }
 
 // @Summary Download Request File URL

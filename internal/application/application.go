@@ -14,7 +14,7 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	// router.Use(cors.Default())
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173", "http://127.0.0.1:5173"},
+		AllowOrigins: []string{"http://82.202.169.245:8091", "http://82.202.169.245"},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders: []string{
 			"Origin",
@@ -61,6 +61,8 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.GET("/api/user/profile", handlers.Profile)
 	router.GET("/api/requests/download_request", handlers.DownloadRequest)
 	router.GET("/api/requests/download_act", handlers.DownloadAct)
+
+	router.DELETE("/api/requests/:id", handlers.DeleteRequest)
 
 	return router
 }

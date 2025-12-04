@@ -357,7 +357,23 @@ func (r *Repository) GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerat
 
 	return requests, nil
 }
-
+func (r *Repository) DeleteRequest(reqID string) error {
+	query := sq.Delete("requests").
+		Where(sq.Eq{"id": reqID}).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+	cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("no request found with id: %s", reqID)
+	}
+	return nil
+}
 func (r *Repository) ChangePassword(req *dto.ChangePasswordRequest) error {
 
 	query := sq.Update("users").

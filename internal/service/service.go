@@ -37,6 +37,11 @@ type repository interface {
 	GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error)
 
 	NewApplicant(name string) (string, error)
+
+	CreateExternalUser(user *dto.ExternalUser) (string, error)
+	GetExternalUserByID(id string) (*dto.ExternalUser, error)
+	AcceptExternalUser(user *dto.ExternalUser) error
+	NotAcceptExternalUser(id string) error
 }
 
 type storage interface {
@@ -327,4 +332,30 @@ func (s *Service) GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (s
 	url := s.storage.GetFileURL(key)
 
 	return url, nil
+}
+
+func (s *Service) CreateExternalUser(user *dto.ExternalUser) (string, error) {
+
+	passwordHash, err := security.Encode(user.Password)
+	if err != nil {
+
+		return "", err
+	}
+
+	user.Password = passwordHash
+	return s.repository.CreateExternalUser(user)
+}
+
+func (s *Service) ChangeAcceptedExternalUser(id string, isAccepted bool) error {
+
+	if isAccepted {
+		user, err := s.repository.GetExternalUserByID(id)
+		if err != nil {
+
+			return err
+		}
+		return s.repository.AcceptExternalUser(user)
+	}
+
+	return s.repository.NotAcceptExternalUser(id)
 }

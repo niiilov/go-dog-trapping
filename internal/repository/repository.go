@@ -462,3 +462,165 @@ func (r *Repository) NewApplicant(name string) (string, error) {
 	return id, nil
 
 }
+
+func (r *Repository) CreateExternalUser(user *dto.ExternalUser) (string, error) {
+	query := sq.Insert("external_users").
+		Columns(
+			"username",
+			"email",
+			"first_name",
+			"last_name",
+			"patronymic",
+			"phone_number",
+			"city",
+			"date_of_birth",
+			"bio",
+			"password",
+			"is_accepted",
+			"role",
+			"role_uid",
+		).
+		Values(
+			user.Username,
+			user.Email,
+			user.FirstName,
+			user.LastName,
+			user.Patronymic,
+			user.PhoneNumber,
+			user.City,
+			user.DateOfBirth,
+			user.Bio,
+			user.Password,
+			user.IsAccepted,
+			user.Role,
+			user.RoleID,
+		).
+		Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return "", err
+	}
+	var id string
+	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
+func (r *Repository) GetExternalUserByID(id string) (*dto.ExternalUser, error) {
+	query := sq.Select(
+		"id",
+		"username",
+		"email",
+		"first_name",
+		"last_name",
+		"patronymic",
+		"phone_number",
+		"city",
+		"date_of_birth",
+		"bio",
+		"password",
+		"is_accepted",
+		"role",
+		"role_uid",
+	).From("external_users").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	row := r.pg.QueryRow(context.Background(), sql, args...)
+	var user dto.ExternalUser
+	if err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.FirstName,
+		&user.LastName,
+		&user.Patronymic,
+		&user.PhoneNumber,
+		&user.City,
+		&user.DateOfBirth,
+		&user.Bio,
+		&user.Password,
+		&user.IsAccepted,
+		&user.Role,
+		&user.RoleID,
+	); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+func (r *Repository) ChangeAcceptedStatusExternalUser(id string, isAccepted bool) error {
+	query := sq.Update("external_users").
+		Set("is_accepted", isAccepted).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repository) AcceptExternalUser(user *dto.ExternalUser) error {
+	r.ChangeAcceptedStatusExternalUser(user.ID, true)
+
+	query := sq.Insert("users").
+		Columns(
+			"id",
+			"login",
+			"full_name",
+			"role",
+			"password_hash",
+			"role_id",
+		).
+		Values(
+			user.ID,
+			user.Username,
+			fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+			user.Role,
+			user.Password,
+			user.RoleID,
+		).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (r *Repository) NotAcceptExternalUser(id string) error {
+
+	r.ChangeAcceptedStatusExternalUser(id, false)
+	query := sq.Delete("users").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

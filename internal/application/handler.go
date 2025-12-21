@@ -29,6 +29,9 @@ type Service interface {
 	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	GetFileURL(objectKey string) string
+
+	CreateExternalUser(user *dto.ExternalUser) (string, error)
+	ChangeAcceptedExternalUser(id string, isAccepted bool) error
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -334,4 +337,56 @@ func (h *Handlers) DownloadAct(c *gin.Context) {
 	url := h.service.GetFileURL(filename)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
+}
+
+// Создать внешнего пользователя POST
+// @Summary Create external user
+// @Security BearerAuth
+// @Description Create external user
+// @Tags external-users
+// @Accept json
+// @Produce json
+// @Param user body dto.ExternalUser true "External user to create"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/external/users [post]
+func (h *Handlers) CreateExternalUser(c *gin.Context) {
+	var user dto.ExternalUser
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	id, err := h.service.CreateExternalUser(&user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"id": id})
+}
+
+// Создать внешнего пользователя POST
+// @Summary ChangeAccept external user
+// @Security BearerAuth
+// @Description Change Accepted external user
+// @Tags external-users
+// @Accept json
+// @Produce json
+// @Param user body dto.ChangeAcceptedExternalUserRequest true "External user to update"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/external/users/{id} [put]
+func (h *Handlers) ChangeAcceptedExternalUser(c *gin.Context) {
+	id := c.Param("id")
+	var req dto.ChangeAcceptedExternalUserRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.service.ChangeAcceptedExternalUser(id, req.IsAccepted); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "External user status updated successfully"})
 }

@@ -64,6 +64,9 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 
 	router.DELETE("/api/requests/:id", handlers.DeleteRequest)
 
+	router.POST("/api/external/users", handlers.CreateExternalUser)
+	router.PUT("/api/external/users/:id", handlers.ChangeAcceptedExternalUser)
+
 	return router
 }
 

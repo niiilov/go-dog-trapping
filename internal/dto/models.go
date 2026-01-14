@@ -10,11 +10,13 @@ const (
 // Account model info
 // @Description Структура для создания учетной записи пользователя. Все поля обязательны к заполнению
 type Account struct {
-	ID       string `json:"id"`        // ID пользователя
-	FullName string `json:"full_name"` //Полное имя или название организации
-	Login    string `json:"login"`     // Логин для входа в систему, должен быть уникальным
-	Role     string `json:"role"`      // Роль пользователя, например, "admin", "user", "otdel" и т.д.
-	Password string `json:"password"`  // Пароль для входа в систему
+	ID       string `json:"id"`                  // ID пользователя
+	FullName string `json:"full_name"`           //Полное имя или название организации
+	Login    string `json:"login"`               // Логин для входа в систему, должен быть уникальным
+	Role     string `json:"role"`                // Роль пользователя, например, "admin", "user", "otdel" и т.д.
+	RoleName string `json:"role_name"`           // Название роли пользователя
+	Password string `json:"password"`            // Пароль для входа в систему
+	SourceID string `json:"source_id,omitempty"` // id тер отдела
 }
 
 // UserProfile model info
@@ -24,6 +26,7 @@ type UserProfile struct {
 	FullName string `json:"full_name"` //Полное имя или название организации
 	Login    string `json:"login"`     // Логин для входа в систему, должен быть уникальным
 	Role     string `json:"role"`      // Роль пользователя, например, "admin", "user", "otdel" и т.д.
+	RoleName string `json:"role_name"` // Название роли пользователя
 }
 
 // AuthCredentials model info

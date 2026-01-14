@@ -24,7 +24,7 @@ var (
 
 type repository interface {
 	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role_id string, err error)
+	ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role_id string, sourceID string, err error)
 	SendRequest(request *dto.RequestFull) (int, error)
 	GetAllRequests(year string) ([]*dto.RequestFull, error)
 	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
@@ -75,23 +75,23 @@ func (s *Service) CreateAccount(account *dto.Account) (string, error) {
 
 	return s.repository.CreateAccount(account)
 }
-func (s *Service) ValidateAccount(account *dto.AuthCredentials) (*dto.UserProfile, string, error) {
+func (s *Service) ValidateAccount(account *dto.AuthCredentials) (*dto.UserProfile, string, string, error) {
 
 	err := validate.Validate(account)
 	if err != nil {
 
-		return nil, "", ErrInvalidData
+		return nil, "", "", ErrInvalidData
 	}
 
-	user, hashPass, role_id, err := s.repository.ValidateAccount(account)
+	user, hashPass, role, sourceID, err := s.repository.ValidateAccount(account)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	if !security.Check(account.Password, hashPass) {
-		return nil, "", ErrInvalidPassword
+		return nil, "", "", ErrInvalidPassword
 	}
-	return user, role_id, nil
+	return user, role, sourceID, nil
 }
 
 func (s *Service) SendRequest(request *dto.RequestFull) error {
@@ -185,7 +185,7 @@ func (s *Service) ChangePassword(req *dto.ChangePasswordRequest) error {
 	valid.Login = req.Login
 	valid.Password = req.OldPassword
 
-	_, hashPass, _, err := s.repository.ValidateAccount(&valid)
+	_, hashPass, _, _, err := s.repository.ValidateAccount(&valid)
 	if err != nil {
 		return ErrInvalidData
 	}

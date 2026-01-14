@@ -1,20 +1,32 @@
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    full_name TEXT NOT NULL,
-    role TEXT NOT NULL,
-    login TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL
-);
+
+-- Территориальные отделы
 CREATE TABLE request_sources (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE applicants (
+-- Юзеры
+CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL
+    full_name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    login TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    source_id UUID REFERENCES request_sources(id) ON DELETE RESTRICT -- NULL для админов/подрядчиков
 );
 
+
+
+-- Заявители
+CREATE TABLE applicants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    is_permanent BOOLEAN DEFAULT true -- true = в списке, false = разовый
+);
+
+CREATE INDEX idx_applicants_permanent ON applicants(is_permanent) WHERE is_permanent = true;
+
+-- Заявки
 CREATE TABLE requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_id UUID REFERENCES request_sources(id) ON DELETE RESTRICT,
@@ -25,42 +37,11 @@ CREATE TABLE requests (
     urgency TEXT NOT NULL,
     contact_person TEXT,
     status TEXT DEFAULT 'Новая',
-    number INT NOT NULL,  -- порядковый номер в году
+    number INT NOT NULL,
     year INT NOT NULL DEFAULT EXTRACT(YEAR FROM now()),
     created_at TIMESTAMP DEFAULT now(),
-    UNIQUE (number, year) -- чтобы номера не повторялись внутри года
+    UNIQUE (number, year)
 );
-
-CREATE TABLE request_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    request_id UUID REFERENCES requests(id) ON DELETE CASCADE,
-    action TEXT NOT NULL,
-    performed_by UUID REFERENCES users(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT now()
-);
-
-CREATE TABLE catch_acts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    request_id UUID REFERENCES requests(id) ON DELETE CASCADE,
-    file_path TEXT NOT NULL,
-    uploaded_by UUID REFERENCES users(id) ON DELETE SET NULL,
-    uploaded_at TIMESTAMP DEFAULT now()
-);
-
-CREATE TABLE contractor_requests (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    period_start DATE NOT NULL,
-    period_end DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT now()
-);
-
-CREATE TABLE contractor_request_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    contractor_request_id UUID REFERENCES contractor_requests(id) ON DELETE CASCADE,
-    request_id UUID REFERENCES requests(id) ON DELETE CASCADE
-);
-
-
 
 
 

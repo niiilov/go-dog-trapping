@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	sd "database/sql"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
@@ -23,11 +25,20 @@ func New(pg *pgxpool.Pool) *Repository {
 }
 
 func (r *Repository) CreateAccount(account *dto.Account) (string, error) {
-	query := sq.Insert("users").
-		Columns("full_name", "role", "login", "password_hash").
-		Values(account.FullName, account.Role, account.Login, account.Password).
-		Suffix("RETURNING id").
-		PlaceholderFormat(sq.Dollar)
+	query := sq.InsertBuilder{}
+	if account.SourceID != "" {
+		query = sq.Insert("users").
+			Columns("full_name", "role", "login", "password_hash", "source_id", "role_name").
+			Values(account.FullName, account.Role, account.Login, account.Password, account.SourceID, account.RoleName).
+			Suffix("RETURNING id").
+			PlaceholderFormat(sq.Dollar)
+	} else {
+		query = sq.Insert("users").
+			Columns("full_name", "role", "login", "password_hash", "role_name").
+			Values(account.FullName, account.Role, account.Login, account.Password, account.RoleName).
+			Suffix("RETURNING id").
+			PlaceholderFormat(sq.Dollar)
+	}
 
 	var id string
 	sql, args, err := query.ToSql()
@@ -43,33 +54,39 @@ func (r *Repository) CreateAccount(account *dto.Account) (string, error) {
 	return id, nil
 }
 
-func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role_id string, err error) {
+func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role string, sourceID string, err error) {
 	fmt.Println("ТУТА")
-	query := sq.Select("id", "password_hash", "role_id").
+	query := sq.Select("id", "password_hash", "role", "source_id").
 		From("users").
 		Where(sq.Eq{"login": account.Login}).
 		PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := query.ToSql()
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", "", err
 	}
 	var id string
+	var source sd.NullString
 
-	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id, &hashPass, &role_id)
+	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id, &hashPass, &role, &source)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", "", err
 	}
 	user, err = r.GetUserProfile(id)
 
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", "", err
 	}
 
 	user.ID = id
-	fmt.Println(user, role_id)
+	fmt.Println(user, role, source)
+	if source.Valid {
+		sourceID = source.String
+	} else {
+		sourceID = ""
+	}
 
-	return user, hashPass, role_id, nil
+	return user, hashPass, role, sourceID, nil
 }
 
 func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {
@@ -424,7 +441,7 @@ func (r *Repository) ChangeProfileInfo(req *dto.ChangeProfileRequest) error {
 }
 
 func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
-	query := sq.Select("full_name", "login", "role").
+	query := sq.Select("full_name", "login", "role", "role_name").
 		From("users").
 		Where(sq.Eq{"id": userId}).
 		PlaceholderFormat(sq.Dollar)
@@ -433,7 +450,7 @@ func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
 		return nil, err
 	}
 	var profile dto.UserProfile
-	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&profile.FullName, &profile.Login, &profile.Role)
+	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&profile.FullName, &profile.Login, &profile.Role, &profile.RoleName)
 	if err != nil {
 		return nil, err
 	}

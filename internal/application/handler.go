@@ -13,7 +13,7 @@ import (
 
 type Service interface {
 	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, role_id string, err error)
+	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, role_id string, sourceID string, err error)
 	SendRequest(request *dto.RequestFull) error
 	DeleteRequest(reqID string) error
 	UploadAct(req *dto.UploadActRequests, key string, filename string) error
@@ -114,7 +114,7 @@ func (h *Handlers) ChangeStatusRequest(c *gin.Context) {
 // @Failure 500 {object} dto.Response 	 "Ошибка при получении запросов."
 // @Router /requests [get]
 func (h *Handlers) GetAllRequests(c *gin.Context) {
-	role_id, exists := c.Get("role_id")
+	role, exists := c.Get("role")
 
 	if !exists {
 		c.JSON(http.StatusForbidden, gin.H{"status": "error", "message": "Доступ запрещен."})
@@ -123,11 +123,7 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 	year := c.Query("year")
 	fmt.Println("year:", year)
 
-	// Если роль - супер админ, то возвращаем все заявки
-	// Иначе возвращаем заявки по отделу
-	// 794c900e-f04f-496d-a4e6-5cf5d69fad90 - это роль супер админа
-
-	if role_id == "794c900e-f04f-496d-a4e6-5cf5d69fad90" {
+	if dto.CanSeeAllRequests(role.(string)) {
 
 		if otdel_id := c.Query("otdel_id"); otdel_id != "" {
 			h.GetRequestsByOtdelFunc(c, otdel_id, year)
@@ -143,8 +139,14 @@ func (h *Handlers) GetAllRequests(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
 		return
 	} else {
+		sourceID, exists := c.Get("source_id")
 
-		h.GetRequestsByOtdelFunc(c, role_id.(string), year)
+		if !exists {
+			c.JSON(http.StatusForbidden, gin.H{"status": "error", "message": "Доступ запрещен."})
+			return
+		}
+		fmt.Println("ВОТ ID", sourceID)
+		h.GetRequestsByOtdelFunc(c, sourceID.(string), year)
 	}
 
 }

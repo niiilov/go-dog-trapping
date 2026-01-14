@@ -7,6 +7,7 @@ services:
       - "8091:8091"
     networks:
       - backend
+      - my-bridge-network
     volumes:
       - shared-data:/app/shared
     restart: on-failure
@@ -43,5 +44,8 @@ volumes:
   shared-data:
 
 networks:
+  my-bridge-network:
+    external: true
+    name: my-bridge-network
   backend:
     driver: bridge

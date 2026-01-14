@@ -18,7 +18,7 @@ func main() {
 		fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 			"admin",
 			"1234",
-			"82.202.169.245",
+			"localhost",
 			5432,
 			"sobaki",
 		))

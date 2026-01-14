@@ -62,10 +62,14 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.GET("/api/requests/download_request", handlers.DownloadRequest)
 	router.GET("/api/requests/download_act", handlers.DownloadAct)
 
+	router.GET("/api/sources", handlers.GetApplicants)
+	router.GET("/api/applicants", handlers.GetTerrOtdels)
+
 	router.DELETE("/api/requests/:id", handlers.DeleteRequest)
 
 	router.POST("/api/external/users", handlers.CreateExternalUser)
 	router.PUT("/api/external/users/:id", handlers.ChangeAcceptedExternalUser)
+	router.GET("/api/external/users", handlers.GetExternalUsers)
 
 	return router
 }

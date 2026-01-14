@@ -91,8 +91,9 @@ type Source struct {
 // Applicant model info
 // @Description Заявитель. Поле name игнорируется при создании заявки.
 type Applicant struct {
-	ID   string `json:"id"`             //уникальный идентификатор заявителя при Post запросе на создание заявки ОБЯЗАТЕЛЕН
-	Name string `json:"name,omitempty"` //Название заявителя игнорируется при создании заявки
+	ID          string `json:"id"`             //уникальный идентификатор заявителя при Post запросе на создание заявки ОБЯЗАТЕЛЕН
+	Name        string `json:"name,omitempty"` //Название заявителя игнорируется при создании заявки
+	IsPermanent bool   `json:"is_permanent"`   // Является ли заявитель постоянным
 }
 
 // RequestForGeneratingMultipleByDate model info

@@ -457,11 +457,11 @@ func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
 	return &profile, nil
 }
 
-func (r *Repository) NewApplicant(name string) (string, error) {
+func (r *Repository) NewNotPemamentApplicant(name string) (string, error) {
 
 	query := sq.Insert("applicants").
-		Columns("name").
-		Values(name).
+		Columns("name", "is_permanent").
+		Values(name, false).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar)
 
@@ -571,6 +571,58 @@ func (r *Repository) GetExternalUserByID(id string) (*dto.ExternalUser, error) {
 	}
 	return &user, nil
 }
+func (r *Repository) GetExternalUsers() ([]*dto.ExternalUser, error) {
+	query := sq.Select(
+		"id",
+		"username",
+		"email",
+		"first_name",
+		"last_name",
+		"patronymic",
+		"phone_number",
+		"city",
+		"date_of_birth",
+		"bio",
+		"password",
+		"is_accepted",
+		"role",
+		"role_uid",
+	).From("external_users").
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.pg.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []*dto.ExternalUser
+	for rows.Next() {
+		var user dto.ExternalUser
+		if err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.FirstName,
+			&user.LastName,
+			&user.Patronymic,
+			&user.PhoneNumber,
+			&user.City,
+			&user.DateOfBirth,
+			&user.Bio,
+			&user.Password,
+			&user.IsAccepted,
+			&user.Role,
+			&user.RoleID,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+	return users, nil
+}
 func (r *Repository) ChangeAcceptedStatusExternalUser(id string, isAccepted bool) error {
 	query := sq.Update("external_users").
 		Set("is_accepted", isAccepted).
@@ -640,4 +692,64 @@ func (r *Repository) NotAcceptExternalUser(id string) error {
 	}
 
 	return nil
+}
+
+func (r *Repository) GetApplicants() ([]*dto.Applicant, error) {
+	query := sq.Select("name", "is_permanent").
+		From("applicants").
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.pg.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var applicants []*dto.Applicant
+	for rows.Next() {
+		var applicant dto.Applicant
+		err := rows.Scan(&applicant.Name, &applicant.IsPermanent)
+		if err != nil {
+			return nil, err
+		}
+		if applicant.IsPermanent {
+			applicants = append(applicants, &applicant)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return applicants, nil
+}
+
+func (r *Repository) GetTerrOtdels() ([]*dto.Source, error) {
+	query := sq.Select("id", "name").
+		From("request_sources").
+		PlaceholderFormat(sq.Dollar)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.pg.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var sources []*dto.Source
+	for rows.Next() {
+		var source dto.Source
+		err := rows.Scan(&source.ID, &source.Name)
+		if err != nil {
+			return nil, err
+		}
+		sources = append(sources, &source)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return sources, nil
 }

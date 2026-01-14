@@ -36,12 +36,17 @@ type repository interface {
 	GetRequestsByDate(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error)
 	GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error)
 
-	NewApplicant(name string) (string, error)
+	NewNotPemamentApplicant(name string) (string, error)
 
 	CreateExternalUser(user *dto.ExternalUser) (string, error)
 	GetExternalUserByID(id string) (*dto.ExternalUser, error)
 	AcceptExternalUser(user *dto.ExternalUser) error
 	NotAcceptExternalUser(id string) error
+
+	GetApplicants() ([]*dto.Applicant, error)
+	GetTerrOtdels() ([]*dto.Source, error)
+
+	GetExternalUsers() ([]*dto.ExternalUser, error)
 }
 
 type storage interface {
@@ -102,7 +107,7 @@ func (s *Service) SendRequest(request *dto.RequestFull) error {
 	fmt.Println(request, "ПРОВЕРКАА ККАСТОМАВ")
 
 	fmt.Println(request.Applicant.Name, "ПРОВЕРКАА ")
-	id, err := s.repository.NewApplicant(request.Applicant.Name)
+	id, err := s.repository.NewNotPemamentApplicant(request.Applicant.Name)
 	if err != nil {
 		return err
 	}
@@ -358,4 +363,16 @@ func (s *Service) ChangeAcceptedExternalUser(id string, isAccepted bool) error {
 	}
 
 	return s.repository.NotAcceptExternalUser(id)
+}
+
+func (s *Service) GetApplicants() ([]*dto.Applicant, error) {
+	return s.repository.GetApplicants()
+}
+
+func (s *Service) GetTerrOtdels() ([]*dto.Source, error) {
+	return s.repository.GetTerrOtdels()
+}
+
+func (s *Service) GetExternalUsers() ([]*dto.ExternalUser, error) {
+	return s.repository.GetExternalUsers()
 }

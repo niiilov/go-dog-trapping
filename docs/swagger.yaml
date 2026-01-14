@@ -1,5 +1,31 @@
 basePath: /api
 definitions:
+  dto.Account:
+    description: Структура для создания учетной записи пользователя. Все поля обязательны
+      к заполнению
+    properties:
+      full_name:
+        description: Полное имя или название организации
+        type: string
+      id:
+        description: ID пользователя
+        type: string
+      login:
+        description: Логин для входа в систему, должен быть уникальным
+        type: string
+      password:
+        description: Пароль для входа в систему
+        type: string
+      role:
+        description: Роль пользователя, например, "admin", "user", "otdel" и т.д.
+        type: string
+      role_name:
+        description: Название роли пользователя
+        type: string
+      source_id:
+        description: id тер отдела
+        type: string
+    type: object
   dto.Applicant:
     description: Заявитель. Поле name игнорируется при создании заявки.
     properties:
@@ -7,6 +33,9 @@ definitions:
         description: уникальный идентификатор заявителя при Post запросе на создание
           заявки ОБЯЗАТЕЛЕН
         type: string
+      is_permanent:
+        description: Является ли заявитель постоянным
+        type: boolean
       name:
         description: Название заявителя игнорируется при создании заявки
         type: string
@@ -47,6 +76,11 @@ definitions:
       refhresh_token:
         type: string
     type: object
+  dto.ChangeAcceptedExternalUserRequest:
+    properties:
+      is_accepted:
+        type: boolean
+    type: object
   dto.ChangePasswordRequest:
     description: Структура для смены пароля пользователя. Все поля обязательны к заполнению
     properties:
@@ -80,6 +114,37 @@ definitions:
         type: string
       status:
         description: Новый статус заявки (новая, в работе, выполнена, отменена)
+        type: string
+    type: object
+  dto.ExternalUser:
+    properties:
+      bio:
+        type: string
+      city:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_accepted:
+        type: boolean
+      last_name:
+        type: string
+      password:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      role:
+        type: string
+      role_id:
+        type: string
+      username:
         type: string
     type: object
   dto.GenerateMultipleRequestByDate:
@@ -121,9 +186,6 @@ definitions:
         type: string
       created_at:
         description: Дата и время создания заявки генерируется автоматически
-        type: string
-      custom_source:
-        description: ручной ввод сведений для заявителя
         type: string
       dogs_count:
         description: Количество собак
@@ -196,6 +258,9 @@ definitions:
       role:
         description: Роль пользователя, например, "admin", "user", "otdel" и т.д.
         type: string
+      role_name:
+        description: Название роли пользователя
+        type: string
     type: object
 host: localhost:8091
 info:
@@ -204,6 +269,137 @@ info:
   title: Go Dog Trapping API
   version: "1.0"
 paths:
+  /api/applicants:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Applicant'
+            type: array
+        "500":
+          description: Ошибка при получении заявителей.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Получить список заявителей
+      tags:
+      - applicants
+  /api/external/users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ExternalUser'
+            type: array
+        "500":
+          description: Ошибка при получении внешних пользователей.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      summary: Получить список внешних пользователей
+      tags:
+      - external-users
+    post:
+      consumes:
+      - application/json
+      description: Create external user
+      parameters:
+      - description: External user to create
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ExternalUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create external user
+      tags:
+      - external-users
+  /api/external/users/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Change Accepted external user
+      parameters:
+      - description: External user to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangeAcceptedExternalUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: ChangeAccept external user
+      tags:
+      - external-users
+  /api/sources:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Source'
+            type: array
+        "500":
+          description: Ошибка при получении территориальных отделов.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить список территориальных отделов
+      tags:
+      - applicants
   /auth/change-password:
     post:
       consumes:
@@ -289,6 +485,36 @@ paths:
       summary: Sign In
       tags:
       - Auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Регистрация нового пользователя.
+      parameters:
+      - description: Account information
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Account'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "400":
+          description: Ошибка в данных запроса.
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+      summary: Sign Up
+      tags:
+      - Auth
   /requests:
     get:
       description: Получение всех запросов на отлов бродячих собак. Доступно только
@@ -347,6 +573,36 @@ paths:
       security:
       - BearerAuth: []
       summary: Send Request
+      tags:
+      - Requests
+  /requests/{id}:
+    delete:
+      description: Удаление заявки на отлов бродячей собаки по ID. Доступно только
+        для районных администраторов.
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Заявка успешно удалена.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Ошибка в данных запроса.
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Ошибка при удалении заявки.
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete Request
       tags:
       - Requests
   /requests/change-status:

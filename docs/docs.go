@@ -15,6 +15,213 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/applicants": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applicants"
+                ],
+                "summary": "Получить список заявителей",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Applicant"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при получении заявителей.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/external/users": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-users"
+                ],
+                "summary": "Получить список внешних пользователей",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.ExternalUser"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при получении внешних пользователей.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create external user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-users"
+                ],
+                "summary": "Create external user",
+                "parameters": [
+                    {
+                        "description": "External user to create",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ExternalUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/external/users/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change Accepted external user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-users"
+                ],
+                "summary": "ChangeAccept external user",
+                "parameters": [
+                    {
+                        "description": "External user to update",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeAcceptedExternalUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/sources": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applicants"
+                ],
+                "summary": "Получить список территориальных отделов",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Source"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при получении территориальных отделов.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/change-password": {
             "post": {
                 "security": [
@@ -124,6 +331,52 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/dto.AuthCredentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-up": {
+            "post": {
+                "description": "Регистрация нового пользователя.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign Up",
+                "parameters": [
+                    {
+                        "description": "Account information",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.Account"
                         }
                     }
                 ],
@@ -567,6 +820,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/requests/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Удаление заявки на отлов бродячей собаки по ID. Доступно только для районных администраторов.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Delete Request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Заявка успешно удалена.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при удалении заявки.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/profile": {
             "get": {
                 "security": [
@@ -606,6 +905,40 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.Account": {
+            "description": "Структура для создания учетной записи пользователя. Все поля обязательны к заполнению",
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "description": "Полное имя или название организации",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID пользователя",
+                    "type": "string"
+                },
+                "login": {
+                    "description": "Логин для входа в систему, должен быть уникальным",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Пароль для входа в систему",
+                    "type": "string"
+                },
+                "role": {
+                    "description": "Роль пользователя, например, \"admin\", \"user\", \"otdel\" и т.д.",
+                    "type": "string"
+                },
+                "role_name": {
+                    "description": "Название роли пользователя",
+                    "type": "string"
+                },
+                "source_id": {
+                    "description": "id тер отдела",
+                    "type": "string"
+                }
+            }
+        },
         "dto.Applicant": {
             "description": "Заявитель. Поле name игнорируется при создании заявки.",
             "type": "object",
@@ -613,6 +946,10 @@ const docTemplate = `{
                 "id": {
                     "description": "уникальный идентификатор заявителя при Post запросе на создание заявки ОБЯЗАТЕЛЕН",
                     "type": "string"
+                },
+                "is_permanent": {
+                    "description": "Является ли заявитель постоянным",
+                    "type": "boolean"
                 },
                 "name": {
                     "description": "Название заявителя игнорируется при создании заявки",
@@ -676,6 +1013,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ChangeAcceptedExternalUserRequest": {
+            "type": "object",
+            "properties": {
+                "is_accepted": {
+                    "type": "boolean"
+                }
+            }
+        },
         "dto.ChangePasswordRequest": {
             "description": "Структура для смены пароля пользователя. Все поля обязательны к заполнению",
             "type": "object",
@@ -721,6 +1066,53 @@ const docTemplate = `{
                 },
                 "status": {
                     "description": "Новый статус заявки (новая, в работе, выполнена, отменена)",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ExternalUser": {
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_accepted": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -778,10 +1170,6 @@ const docTemplate = `{
                 },
                 "created_at": {
                     "description": "Дата и время создания заявки генерируется автоматически",
-                    "type": "string"
-                },
-                "custom_source": {
-                    "description": "ручной ввод сведений для заявителя",
                     "type": "string"
                 },
                 "dogs_count": {
@@ -874,6 +1262,10 @@ const docTemplate = `{
                 },
                 "role": {
                     "description": "Роль пользователя, например, \"admin\", \"user\", \"otdel\" и т.д.",
+                    "type": "string"
+                },
+                "role_name": {
+                    "description": "Название роли пользователя",
                     "type": "string"
                 }
             }

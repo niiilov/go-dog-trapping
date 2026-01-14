@@ -32,6 +32,11 @@ type Service interface {
 
 	CreateExternalUser(user *dto.ExternalUser) (string, error)
 	ChangeAcceptedExternalUser(id string, isAccepted bool) error
+
+	GetApplicants() ([]*dto.Applicant, error)
+	GetTerrOtdels() ([]*dto.Source, error)
+
+	GetExternalUsers() ([]*dto.ExternalUser, error)
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -391,4 +396,51 @@ func (h *Handlers) ChangeAcceptedExternalUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "External user status updated successfully"})
+}
+
+// @Summary Получить список заявителей
+// @Tags applicants
+// @Produce json
+// @Success 200 {object} []dto.Applicant
+// @Failure 500 {object} dto.Response	"Ошибка при получении заявителей."
+// @Router /api/applicants [get]
+func (h *Handlers) GetApplicants(c *gin.Context) {
+	applicants, err := h.service.GetApplicants()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"source": applicants})
+}
+
+// @Summary Получить список территориальных отделов
+// @Security BearerAuth
+// @Tags applicants
+// @Produce json
+// @Success 200 {object} []dto.Source
+// @Failure 500 {object} dto.Response	"Ошибка при получении территориальных отделов."
+// @Router /api/sources [get]
+func (h *Handlers) GetTerrOtdels(c *gin.Context) {
+	otdels, err := h.service.GetTerrOtdels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"applicant": otdels})
+}
+
+// @Summary Получить список внешних пользователей
+// @Tags external-users
+// @Produce json
+// @Success 200 {object} []dto.ExternalUser
+// @Failure 500 {object} dto.Response	"Ошибка при получении внешних пользователей."
+// @Router /api/external/users [get]
+func (h *Handlers) GetExternalUsers(c *gin.Context) {
+	users, err := h.service.GetExternalUsers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"external_users": users})
 }

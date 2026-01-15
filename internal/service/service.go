@@ -40,13 +40,15 @@ type repository interface {
 
 	CreateExternalUser(user *dto.ExternalUser) (string, error)
 	GetExternalUserByID(id string) (*dto.ExternalUser, error)
-	AcceptExternalUser(user *dto.ExternalUser) error
+	AcceptExternalUser(user *dto.AcceptExternalUserRequest) error
 	NotAcceptExternalUser(id string) error
 
 	GetApplicants() ([]*dto.Applicant, error)
 	GetTerrOtdels() ([]*dto.Source, error)
 
 	GetExternalUsers() ([]*dto.ExternalUser, error)
+
+	AddNewTerOtdel(terOtdel *dto.AddNewTerOtdel) error
 }
 
 type storage interface {
@@ -351,18 +353,9 @@ func (s *Service) CreateExternalUser(user *dto.ExternalUser) (string, error) {
 	return s.repository.CreateExternalUser(user)
 }
 
-func (s *Service) ChangeAcceptedExternalUser(id string, isAccepted bool) error {
+func (s *Service) ChangeAcceptedExternalUser(user *dto.AcceptExternalUserRequest) error {
 
-	if isAccepted {
-		user, err := s.repository.GetExternalUserByID(id)
-		if err != nil {
-
-			return err
-		}
-		return s.repository.AcceptExternalUser(user)
-	}
-
-	return s.repository.NotAcceptExternalUser(id)
+	return s.repository.AcceptExternalUser(user)
 }
 
 func (s *Service) GetApplicants() ([]*dto.Applicant, error) {
@@ -373,6 +366,30 @@ func (s *Service) GetTerrOtdels() ([]*dto.Source, error) {
 	return s.repository.GetTerrOtdels()
 }
 
-func (s *Service) GetExternalUsers() ([]*dto.ExternalUser, error) {
-	return s.repository.GetExternalUsers()
+func (s *Service) GetExternalUsers() ([]*dto.GetExternalUser, error) {
+
+	users, err := s.repository.GetExternalUsers()
+	if err != nil {
+		return nil, err
+	}
+	var externalUsers []*dto.GetExternalUser
+	for _, user := range users {
+		var usr dto.GetExternalUser
+		usr.ID = user.ID
+		usr.Username = user.Username
+		usr.Email = user.Email
+		usr.FirstName = user.FirstName
+		usr.LastName = user.LastName
+		usr.Patronymic = user.Patronymic
+		usr.City = user.City
+		usr.DateOfBirth = user.DateOfBirth
+		usr.Bio = user.Bio
+		usr.IsAccepted = user.IsAccepted
+		externalUsers = append(externalUsers, &usr)
+	}
+	return externalUsers, nil
+}
+
+func (s *Service) AddNewTerOtdel(terOtdel *dto.AddNewTerOtdel) error {
+	return s.repository.AddNewTerOtdel(terOtdel)
 }

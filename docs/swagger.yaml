@@ -1,5 +1,21 @@
 basePath: /api
 definitions:
+  dto.AcceptExternalUserRequest:
+    description: Структура для принятия внешнего пользователя. Все поля обязательны
+      к заполнению ID берётся из param. Для роли admin, contractor необязательно заполнять
+      SourceID
+    properties:
+      full_name:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+      role_name:
+        type: string
+      source_id:
+        type: string
+    type: object
   dto.Account:
     description: Структура для создания учетной записи пользователя. Все поля обязательны
       к заполнению
@@ -24,6 +40,11 @@ definitions:
         type: string
       source_id:
         description: id тер отдела
+        type: string
+    type: object
+  dto.AddNewTerOtdel:
+    properties:
+      name:
         type: string
     type: object
   dto.Applicant:
@@ -76,11 +97,6 @@ definitions:
       refhresh_token:
         type: string
     type: object
-  dto.ChangeAcceptedExternalUserRequest:
-    properties:
-      is_accepted:
-        type: boolean
-    type: object
   dto.ChangePasswordRequest:
     description: Структура для смены пароля пользователя. Все поля обязательны к заполнению
     properties:
@@ -117,6 +133,8 @@ definitions:
         type: string
     type: object
   dto.ExternalUser:
+    description: Структура для создания внешнего пользователя. Все поля обязательны
+      к заполнению кроме Patronymic, PhoneNumber, City, DateOfBirth, Bio
     properties:
       bio:
         type: string
@@ -140,10 +158,6 @@ definitions:
         type: string
       phone_number:
         type: string
-      role:
-        type: string
-      role_id:
-        type: string
       username:
         type: string
     type: object
@@ -165,6 +179,32 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  dto.GetExternalUser:
+    description: Структура для пполучения внешних пользователей
+    properties:
+      bio:
+        type: string
+      city:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_accepted:
+        type: boolean
+      last_name:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      username:
+        type: string
     type: object
   dto.RequestFull:
     description: Полная информация о заявке на отлов бродячей собаки. Поля id, number,
@@ -296,7 +336,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.ExternalUser'
+              $ref: '#/definitions/dto.GetExternalUser'
             type: array
         "500":
           description: Ошибка при получении внешних пользователей.
@@ -353,7 +393,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/dto.ChangeAcceptedExternalUserRequest'
+          $ref: '#/definitions/dto.AcceptExternalUserRequest'
       produces:
       - application/json
       responses:
@@ -400,6 +440,41 @@ paths:
       summary: Получить список территориальных отделов
       tags:
       - applicants
+  /api/territorial-departments:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: New territorial department
+        in: body
+        name: terOtdel
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddNewTerOtdel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Добавить новый тер отдел
+      tags:
+      - territorial-departments
   /auth/change-password:
     post:
       consumes:

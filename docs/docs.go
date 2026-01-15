@@ -58,7 +58,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ExternalUser"
+                                "$ref": "#/definitions/dto.GetExternalUser"
                             }
                         }
                     },
@@ -154,7 +154,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ChangeAcceptedExternalUserRequest"
+                            "$ref": "#/definitions/dto.AcceptExternalUserRequest"
                         }
                     }
                 ],
@@ -217,6 +217,60 @@ const docTemplate = `{
                         "description": "Ошибка при получении территориальных отделов.",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/territorial-departments": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "territorial-departments"
+                ],
+                "summary": "Добавить новый тер отдел",
+                "parameters": [
+                    {
+                        "description": "New territorial department",
+                        "name": "terOtdel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddNewTerOtdel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -905,6 +959,27 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.AcceptExternalUserRequest": {
+            "description": "Структура для принятия внешнего пользователя. Все поля обязательны к заполнению ID берётся из param. Для роли admin, contractor необязательно заполнять SourceID",
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "role_name": {
+                    "type": "string"
+                },
+                "source_id": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.Account": {
             "description": "Структура для создания учетной записи пользователя. Все поля обязательны к заполнению",
             "type": "object",
@@ -935,6 +1010,14 @@ const docTemplate = `{
                 },
                 "source_id": {
                     "description": "id тер отдела",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddNewTerOtdel": {
+            "type": "object",
+            "properties": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -1013,14 +1096,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ChangeAcceptedExternalUserRequest": {
-            "type": "object",
-            "properties": {
-                "is_accepted": {
-                    "type": "boolean"
-                }
-            }
-        },
         "dto.ChangePasswordRequest": {
             "description": "Структура для смены пароля пользователя. Все поля обязательны к заполнению",
             "type": "object",
@@ -1071,6 +1146,7 @@ const docTemplate = `{
             }
         },
         "dto.ExternalUser": {
+            "description": "Структура для создания внешнего пользователя. Все поля обязательны к заполнению кроме Patronymic, PhoneNumber, City, DateOfBirth, Bio",
             "type": "object",
             "properties": {
                 "bio": {
@@ -1106,12 +1182,6 @@ const docTemplate = `{
                 "phone_number": {
                     "type": "string"
                 },
-                "role": {
-                    "type": "string"
-                },
-                "role_id": {
-                    "type": "string"
-                },
                 "username": {
                     "type": "string"
                 }
@@ -1141,6 +1211,45 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "dto.GetExternalUser": {
+            "description": "Структура для пполучения внешних пользователей",
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_accepted": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },

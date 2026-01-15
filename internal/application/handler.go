@@ -31,12 +31,13 @@ type Service interface {
 	GetFileURL(objectKey string) string
 
 	CreateExternalUser(user *dto.ExternalUser) (string, error)
-	ChangeAcceptedExternalUser(id string, isAccepted bool) error
-
+	ChangeAcceptedExternalUser(user *dto.AcceptExternalUserRequest) error
 	GetApplicants() ([]*dto.Applicant, error)
 	GetTerrOtdels() ([]*dto.Source, error)
 
-	GetExternalUsers() ([]*dto.ExternalUser, error)
+	GetExternalUsers() ([]*dto.GetExternalUser, error)
+
+	AddNewTerOtdel(terOtdel *dto.AddNewTerOtdel) error
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -379,19 +380,20 @@ func (h *Handlers) CreateExternalUser(c *gin.Context) {
 // @Tags external-users
 // @Accept json
 // @Produce json
-// @Param user body dto.ChangeAcceptedExternalUserRequest true "External user to update"
+// @Param user body dto.AcceptExternalUserRequest true "External user to update"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/external/users/{id} [put]
 func (h *Handlers) ChangeAcceptedExternalUser(c *gin.Context) {
 	id := c.Param("id")
-	var req dto.ChangeAcceptedExternalUserRequest
+	var req dto.AcceptExternalUserRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.service.ChangeAcceptedExternalUser(id, req.IsAccepted); err != nil {
+	req.ID = id
+	if err := h.service.ChangeAcceptedExternalUser(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -433,7 +435,7 @@ func (h *Handlers) GetTerrOtdels(c *gin.Context) {
 // @Summary Получить список внешних пользователей
 // @Tags external-users
 // @Produce json
-// @Success 200 {object} []dto.ExternalUser
+// @Success 200 {object} []dto.GetExternalUser
 // @Failure 500 {object} dto.Response	"Ошибка при получении внешних пользователей."
 // @Router /api/external/users [get]
 func (h *Handlers) GetExternalUsers(c *gin.Context) {
@@ -442,5 +444,28 @@ func (h *Handlers) GetExternalUsers(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"external_users": users})
+}
+
+// @Summary Добавить новый тер отдел
+// @Tags territorial-departments
+// @Accept json
+// @Produce json
+// @Param terOtdel body dto.AddNewTerOtdel true "New territorial department"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/territorial-departments [post]
+func (h *Handlers) AddNewTerOtdel(c *gin.Context) {
+	var terOtdel dto.AddNewTerOtdel
+	if err := c.BindJSON(&terOtdel); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.service.AddNewTerOtdel(&terOtdel); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "New territorial department added successfully"})
 }

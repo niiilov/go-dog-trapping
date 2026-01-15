@@ -494,8 +494,6 @@ func (r *Repository) CreateExternalUser(user *dto.ExternalUser) (string, error) 
 			"bio",
 			"password",
 			"is_accepted",
-			"role",
-			"role_uid",
 		).
 		Values(
 			user.Username,
@@ -509,8 +507,6 @@ func (r *Repository) CreateExternalUser(user *dto.ExternalUser) (string, error) 
 			user.Bio,
 			user.Password,
 			user.IsAccepted,
-			user.Role,
-			user.RoleID,
 		).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar)
@@ -540,8 +536,6 @@ func (r *Repository) GetExternalUserByID(id string) (*dto.ExternalUser, error) {
 		"bio",
 		"password",
 		"is_accepted",
-		"role",
-		"role_uid",
 	).From("external_users").
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar)
@@ -564,8 +558,6 @@ func (r *Repository) GetExternalUserByID(id string) (*dto.ExternalUser, error) {
 		&user.Bio,
 		&user.Password,
 		&user.IsAccepted,
-		&user.Role,
-		&user.RoleID,
 	); err != nil {
 		return nil, err
 	}
@@ -585,9 +577,8 @@ func (r *Repository) GetExternalUsers() ([]*dto.ExternalUser, error) {
 		"bio",
 		"password",
 		"is_accepted",
-		"role",
-		"role_uid",
 	).From("external_users").
+		Where(sq.Eq{"is_accepted": false}).
 		PlaceholderFormat(sq.Dollar)
 	sql, args, err := query.ToSql()
 	if err != nil {
@@ -614,8 +605,6 @@ func (r *Repository) GetExternalUsers() ([]*dto.ExternalUser, error) {
 			&user.Bio,
 			&user.Password,
 			&user.IsAccepted,
-			&user.Role,
-			&user.RoleID,
 		); err != nil {
 			return nil, err
 		}
@@ -642,38 +631,28 @@ func (r *Repository) ChangeAcceptedStatusExternalUser(id string, isAccepted bool
 	return nil
 }
 
-func (r *Repository) AcceptExternalUser(user *dto.ExternalUser) error {
+func (r *Repository) AcceptExternalUser(user *dto.AcceptExternalUserRequest) error {
+
 	r.ChangeAcceptedStatusExternalUser(user.ID, true)
-
-	query := sq.Insert("users").
-		Columns(
-			"id",
-			"login",
-			"full_name",
-			"role",
-			"password_hash",
-			"role_id",
-		).
-		Values(
-			user.ID,
-			user.Username,
-			fmt.Sprintf("%s %s", user.FirstName, user.LastName),
-			user.Role,
-			user.Password,
-			user.RoleID,
-		).
-		PlaceholderFormat(sq.Dollar)
-	sql, args, err := query.ToSql()
+	userDb, err := r.GetExternalUserByID(user.ID)
 	if err != nil {
 		return err
 	}
 
-	_, err = r.pg.Exec(context.Background(), sql, args...)
+	account := &dto.Account{
+		FullName: user.FullName,
+		Login:    userDb.Username,
+		Password: userDb.Password,
+		Role:     user.Role,
+		RoleName: user.RoleName,
+		SourceID: user.SourceID,
+	}
+	_, err = r.CreateAccount(account)
 	if err != nil {
 		return err
 	}
-
 	return nil
+
 }
 func (r *Repository) NotAcceptExternalUser(id string) error {
 
@@ -752,4 +731,23 @@ func (r *Repository) GetTerrOtdels() ([]*dto.Source, error) {
 		return nil, err
 	}
 	return sources, nil
+}
+
+func (r *Repository) AddNewTerOtdel(terOtdel *dto.AddNewTerOtdel) error {
+	query := sq.Insert("request_sources").
+		Columns("name").
+		Values(terOtdel.Name).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.pg.Exec(context.Background(), sql, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

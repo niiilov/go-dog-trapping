@@ -151,23 +151,4 @@ type DownloadActRequest struct {
 
 }
 
-type ExternalUser struct {
-	ID          string     `json:"id"`
-	Username    string     `json:"username"`
-	Email       string     `json:"email"`
-	FirstName   string     `json:"first_name"`
-	LastName    string     `json:"last_name"`
-	Patronymic  string     `json:"patronymic,omitempty"`
-	PhoneNumber string     `json:"phone_number,omitempty"`
-	City        string     `json:"city,omitempty"`
-	DateOfBirth *time.Time `json:"date_of_birth,omitempty"`
-	Bio         string     `json:"bio,omitempty"`
-	Password    string     `json:"password"`
-	IsAccepted  bool       `json:"is_accepted"`
-	Role        string     `json:"role"`
-	RoleID      string     `json:"role_id"`
-}
 
-type ChangeAcceptedExternalUserRequest struct {
-	IsAccepted bool `json:"is_accepted"`
-}

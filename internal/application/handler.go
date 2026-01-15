@@ -456,7 +456,7 @@ func (h *Handlers) GetExternalUsers(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /api/territorial-departments [post]
+// @Router /api/sources [post]
 func (h *Handlers) AddNewTerOtdel(c *gin.Context) {
 	var terOtdel dto.AddNewTerOtdel
 	if err := c.BindJSON(&terOtdel); err != nil {

@@ -220,9 +220,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/territorial-departments": {
+            },
             "post": {
                 "consumes": [
                     "application/json"

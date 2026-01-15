@@ -440,7 +440,6 @@ paths:
       summary: Получить список территориальных отделов
       tags:
       - applicants
-  /api/territorial-departments:
     post:
       consumes:
       - application/json

@@ -44,8 +44,5 @@ volumes:
   shared-data:
 
 networks:
-  my-bridge-network:
-    external: true
-    name: my-bridge-network
   backend:
     driver: bridge

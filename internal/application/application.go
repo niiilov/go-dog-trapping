@@ -76,7 +76,7 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	extR.POST("/api/external/users", handlers.CreateExternalUser)
 	extR.PUT("/api/external/users/:id", handlers.ChangeStatusDisAcceptExternalUser)
 	extR.PUT("/api/external/users/:id/activate", handlers.ChangeStatusAcceptExternalUser)
-	extR.PUT("/api/external/:id", handlers.ChangeAcceptedExternalUser)
+	extR.POST("/api/external/:id", handlers.ChangeAcceptedExternalUser)
 	extR.GET("/api/external/users", handlers.GetExternalUsers)
 
 	return r

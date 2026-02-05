@@ -9,11 +9,15 @@ import (
 )
 
 func InitRouter(handlers *Handlers) *gin.Engine {
-	router := gin.Default()
+	r := gin.Default()
+
+	router := r.RouterGroup.Group("")
+
+	extR := r.RouterGroup.Group("")
 
 	// router.Use(cors.Default())
 
-	router.Use(cors.New(cors.Config{
+	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:5173", "http://127.0.0.1:5173"},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders: []string{
@@ -69,11 +73,13 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 
 	router.POST("/api/sources", handlers.AddNewTerOtdel)
 
-	router.POST("/api/external/users", handlers.CreateExternalUser)
-	router.PUT("/api/external/users/:id", handlers.ChangeAcceptedExternalUser)
-	router.GET("/api/external/users", handlers.GetExternalUsers)
+	extR.POST("/api/external/users", handlers.CreateExternalUser)
+	extR.PUT("/api/external/users/:id", handlers.ChangeStatusDisAcceptExternalUser)
+	extR.PUT("/api/external/users/:id/activate", handlers.ChangeStatusAcceptExternalUser)
+	extR.PUT("/api/external/:id", handlers.ChangeAcceptedExternalUser)
+	extR.GET("/api/external/users", handlers.GetExternalUsers)
 
-	return router
+	return r
 }
 
 func StartApplication(addr string, handlers *Handlers) {

@@ -38,10 +38,13 @@ type repository interface {
 
 	NewNotPemamentApplicant(name string) (string, error)
 
-	CreateExternalUser(user *dto.ExternalUser) (string, error)
-	GetExternalUserByID(id string) (*dto.ExternalUser, error)
+	CreateExternalUser(user *dto.ExternalUser) (int, error)
+	GetExternalUserByID(id int) (*dto.ExternalUser, error)
+
+	ChangeAcceptedStatusExternalUser(id int, isAccepted bool) error
+
 	AcceptExternalUser(user *dto.AcceptExternalUserRequest) error
-	NotAcceptExternalUser(id string) error
+	NotAcceptExternalUser(id int) error
 
 	GetApplicants() ([]*dto.Applicant, error)
 	GetTerrOtdels() ([]*dto.Source, error)
@@ -341,18 +344,25 @@ func (s *Service) GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (s
 	return url, nil
 }
 
-func (s *Service) CreateExternalUser(user *dto.ExternalUser) (string, error) {
+func (s *Service) CreateExternalUser(user *dto.ExternalUser) (int, error) {
 
 	passwordHash, err := security.Encode(user.Password)
 	if err != nil {
 
-		return "", err
+		return 0, err
 	}
 
 	user.Password = passwordHash
 	return s.repository.CreateExternalUser(user)
 }
 
+func (s *Service) ChangeSatusExternalUser(id int, status bool) error {
+
+	return s.repository.ChangeAcceptedStatusExternalUser(id, status)
+
+}
+
+// Добавить внешнего чела в систему собак
 func (s *Service) ChangeAcceptedExternalUser(user *dto.AcceptExternalUserRequest) error {
 
 	return s.repository.AcceptExternalUser(user)

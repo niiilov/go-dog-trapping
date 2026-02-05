@@ -8,7 +8,7 @@ definitions:
       full_name:
         type: string
       id:
-        type: string
+        type: integer
       role:
         type: string
       role_name:
@@ -327,6 +327,44 @@ paths:
       summary: Получить список заявителей
       tags:
       - applicants
+  /api/external/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Accepted external user to dogs
+      parameters:
+      - description: External user to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AcceptExternalUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Accept internal systen external user
+      tags:
+      - external-users
   /api/external/users:
     get:
       produces:
@@ -387,13 +425,37 @@ paths:
       consumes:
       - application/json
       description: Change Accepted external user
-      parameters:
-      - description: External user to update
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/dto.AcceptExternalUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: ChangeDisAccept external user
+      tags:
+      - external-users
+  /api/external/users/{id}/activate:
+    put:
+      consumes:
+      - application/json
+      description: Change Accepted external user
       produces:
       - application/json
       responses:

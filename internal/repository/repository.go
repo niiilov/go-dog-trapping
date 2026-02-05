@@ -480,7 +480,7 @@ func (r *Repository) NewNotPemamentApplicant(name string) (string, error) {
 
 }
 
-func (r *Repository) CreateExternalUser(user *dto.ExternalUser) (string, error) {
+func (r *Repository) CreateExternalUser(user *dto.ExternalUser) (int, error) {
 	query := sq.Insert("external_users").
 		Columns(
 			"username",
@@ -512,17 +512,17 @@ func (r *Repository) CreateExternalUser(user *dto.ExternalUser) (string, error) 
 		PlaceholderFormat(sq.Dollar)
 	sql, args, err := query.ToSql()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	var id string
+	var id int
 	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	return id, nil
 }
 
-func (r *Repository) GetExternalUserByID(id string) (*dto.ExternalUser, error) {
+func (r *Repository) GetExternalUserByID(id int) (*dto.ExternalUser, error) {
 	query := sq.Select(
 		"id",
 		"username",
@@ -578,7 +578,7 @@ func (r *Repository) GetExternalUsers() ([]*dto.ExternalUser, error) {
 		"password",
 		"is_accepted",
 	).From("external_users").
-		Where(sq.Eq{"is_accepted": false}).
+		Where(sq.Eq{"is_accepted": true}).
 		PlaceholderFormat(sq.Dollar)
 	sql, args, err := query.ToSql()
 	if err != nil {
@@ -612,7 +612,7 @@ func (r *Repository) GetExternalUsers() ([]*dto.ExternalUser, error) {
 	}
 	return users, nil
 }
-func (r *Repository) ChangeAcceptedStatusExternalUser(id string, isAccepted bool) error {
+func (r *Repository) ChangeAcceptedStatusExternalUser(id int, isAccepted bool) error {
 	query := sq.Update("external_users").
 		Set("is_accepted", isAccepted).
 		Where(sq.Eq{"id": id}).
@@ -631,9 +631,9 @@ func (r *Repository) ChangeAcceptedStatusExternalUser(id string, isAccepted bool
 	return nil
 }
 
+// Добавление в систему собак нового пользователя
 func (r *Repository) AcceptExternalUser(user *dto.AcceptExternalUserRequest) error {
 
-	r.ChangeAcceptedStatusExternalUser(user.ID, true)
 	userDb, err := r.GetExternalUserByID(user.ID)
 	if err != nil {
 		return err
@@ -654,7 +654,7 @@ func (r *Repository) AcceptExternalUser(user *dto.AcceptExternalUserRequest) err
 	return nil
 
 }
-func (r *Repository) NotAcceptExternalUser(id string) error {
+func (r *Repository) NotAcceptExternalUser(id int) error {
 
 	r.ChangeAcceptedStatusExternalUser(id, false)
 	query := sq.Delete("users").

@@ -5,7 +5,7 @@ import "time"
 // ExternalUser model info
 // @Description Структура для создания внешнего пользователя. Все поля обязательны к заполнению кроме Patronymic, PhoneNumber, City, DateOfBirth, Bio
 type ExternalUser struct {
-	ID          string     `json:"id"`
+	ID          int        `json:"id"`
 	Username    string     `json:"username"`
 	Email       string     `json:"email"`
 	FirstName   string     `json:"first_name"`
@@ -21,7 +21,7 @@ type ExternalUser struct {
 
 //@Description Структура для пполучения внешних пользователей
 type GetExternalUser struct {
-	ID          string     `json:"id"`
+	ID          int        `json:"id"`
 	Username    string     `json:"username"`
 	Email       string     `json:"email"`
 	FirstName   string     `json:"first_name"`
@@ -41,7 +41,7 @@ type ChangeAcceptedExternalUserRequest struct {
 // AcceptExternalUserRequest model info
 // @Description Структура для принятия внешнего пользователя. Все поля обязательны к заполнению ID берётся из param. Для роли admin, contractor необязательно заполнять SourceID
 type AcceptExternalUserRequest struct {
-	ID       string `json:"id,omitempty"`
+	ID       int    `json:"id,omitempty"`
 	FullName string `json:"full_name"`
 	Role     string `json:"role"`
 	RoleName string `json:"role_name"`

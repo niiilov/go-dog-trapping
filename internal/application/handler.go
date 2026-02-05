@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,8 +31,11 @@ type Service interface {
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 	GetFileURL(objectKey string) string
 
-	CreateExternalUser(user *dto.ExternalUser) (string, error)
+	CreateExternalUser(user *dto.ExternalUser) (int, error)
+	ChangeSatusExternalUser(id int, status bool) error
+
 	ChangeAcceptedExternalUser(user *dto.AcceptExternalUserRequest) error
+
 	GetApplicants() ([]*dto.Applicant, error)
 	GetTerrOtdels() ([]*dto.Source, error)
 
@@ -373,10 +377,63 @@ func (h *Handlers) CreateExternalUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
-// Создать внешнего пользователя POST
 // @Summary ChangeAccept external user
 // @Security BearerAuth
 // @Description Change Accepted external user
+// @Tags external-users
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/external/users/{id}/activate [put]
+func (h *Handlers) ChangeStatusAcceptExternalUser(c *gin.Context) {
+	strID := c.Param("id")
+
+	id, err := strconv.Atoi(strID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.ChangeSatusExternalUser(id, true); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "External user status updated successfully"})
+}
+
+// @Summary ChangeDisAccept external user
+// @Security BearerAuth
+// @Description Change Accepted external user
+// @Tags external-users
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/external/users/{id} [put]
+func (h *Handlers) ChangeStatusDisAcceptExternalUser(c *gin.Context) {
+	strID := c.Param("id")
+
+	id, err := strconv.Atoi(strID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.ChangeSatusExternalUser(id, false); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "External user status updated successfully"})
+}
+
+// @Summary Accept internal systen external user
+// @Security BearerAuth
+// @Description  Accepted external user to dogs
 // @Tags external-users
 // @Accept json
 // @Produce json
@@ -384,9 +441,16 @@ func (h *Handlers) CreateExternalUser(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /api/external/users/{id} [put]
+// @Router /api/external/{id} [put]
 func (h *Handlers) ChangeAcceptedExternalUser(c *gin.Context) {
-	id := c.Param("id")
+	strID := c.Param("id")
+
+	id, err := strconv.Atoi(strID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	var req dto.AcceptExternalUserRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

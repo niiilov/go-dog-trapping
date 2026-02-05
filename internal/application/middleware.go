@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handlers) authMiddleware(c *gin.Context) {
-	if c.Request.URL.Path == "/api/auth/sign-up" || c.Request.URL.Path == "/api/auth/sign-in" || c.Request.URL.Path == "/api/auth/refresh" {
+	if c.Request.URL.Path == "/api/auth/sign-up" || c.Request.URL.Path == "/api/auth/sign-in" || c.Request.URL.Path == "/api/auth/refresh" || c.Request.URL.Path == "/api/external/users" {
 		c.Next()
 		return
 	}

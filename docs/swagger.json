@@ -10,26 +10,44 @@
     "basePath": "/api",
     "paths": {
         "/api/applicants": {
-            "get": {
+            "post": {
+                "description": "Создание заявки на отлов бродячей собаки",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "applicants"
+                    "Applicants"
                 ],
-                "summary": "Получить список заявителей",
+                "summary": "Create Applicant",
+                "parameters": [
+                    {
+                        "description": "Applicant information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateApplicantDTO"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Заявка успешно создана.",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.Applicant"
-                            }
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных заявки.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
                         }
                     },
                     "500": {
-                        "description": "Ошибка при получении заявителей.",
+                        "description": "Ошибка при создании заявки.",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
@@ -37,33 +55,275 @@
                 }
             }
         },
-        "/api/external/users": {
+        "/api/applicants/{districtID}": {
             "get": {
+                "description": "Получение заявок по ID района",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "external-users"
+                    "Applicants"
                 ],
-                "summary": "Получить список внешних пользователей",
+                "summary": "Get Applicants by District ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "District ID",
+                        "name": "districtID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Заявки по району",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Applicant"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при получении заявок.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "description": "Авторизация пользователя.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Login information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthCredentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "description": "Регистрация нового пользователя.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register",
+                "parameters": [
+                    {
+                        "description": "User information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUserDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/districts": {
+            "get": {
+                "description": "Get all districts",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "districts"
+                ],
+                "summary": "Get all districts",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.GetExternalUser"
+                                "$ref": "#/definitions/dto.District"
                             }
                         }
                     },
                     "500": {
-                        "description": "Ошибка при получении внешних пользователей.",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/dto.Response"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             },
+            "post": {
+                "description": "Create a new district",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "districts"
+                ],
+                "summary": "Create a district",
+                "parameters": [
+                    {
+                        "description": "District",
+                        "name": "district",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.District"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.District"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/districts/{id}": {
+            "delete": {
+                "description": "Delete a district by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "districts"
+                ],
+                "summary": "Delete a district",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "District ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/external/users": {
             "post": {
                 "security": [
                     {
@@ -281,32 +541,73 @@
                 }
             }
         },
-        "/api/sources": {
+        "/api/generate": {
+            "post": {
+                "description": "Генерация документов по заявкам",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Генерация"
+                ],
+                "summary": "Генерация документов",
+                "parameters": [
+                    {
+                        "description": "Запрос на генерацию документов",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.Generate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/requests": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
+                "description": "Получение заявок на отлов бродячих собак по ID территориального отдела или района.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "applicants"
+                    "Requests"
                 ],
-                "summary": "Получить список территориальных отделов",
+                "summary": "Get Requests",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Список заявок",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.Source"
+                                "$ref": "#/definitions/dto.Request"
                             }
                         }
                     },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
                     "500": {
-                        "description": "Ошибка при получении территориальных отделов.",
+                        "description": "Ошибка при получении заявок.",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
@@ -314,66 +615,12 @@
                 }
             },
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "territorial-departments"
-                ],
-                "summary": "Добавить новый тер отдел",
-                "parameters": [
-                    {
-                        "description": "New territorial department",
-                        "name": "terOtdel",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AddNewTerOtdel"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/change-password": {
-            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Смена данных профлия пользователя.",
+                "description": "Создание заявки на отлов бродячих собак.",
                 "consumes": [
                     "application/json"
                 ],
@@ -381,23 +628,23 @@
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Requests"
                 ],
-                "summary": "Change Profile Info",
+                "summary": "Create Request",
                 "parameters": [
                     {
-                        "description": "Change Profile information",
+                        "description": "Создание заявки",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ChangeProfileRequest"
+                            "$ref": "#/definitions/dto.CreateRequestDTO"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Информация успешна изменена.",
+                    "201": {
+                        "description": "Заявка успешно создана",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
                         }
@@ -409,9 +656,424 @@
                         }
                     },
                     "500": {
-                        "description": "Ошибка при cмене  данных.",
+                        "description": "Ошибка при создании заявки.",
                         "schema": {
                             "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/requests/act": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Добавление акта об отлове бродячих собак.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Add Act File",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Act File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Request ID",
+                        "name": "request_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Акт успешно добавлен",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при добавлении акта.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/requests/act/{filename}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получение URL для скачивания файла акта",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Download Act File URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filename",
+                        "name": "filename",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseUrl"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при получении запросов.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/requests/status": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Изменение статуса заявки на отлов бродячих собак.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Change Request Status",
+                "parameters": [
+                    {
+                        "description": "Изменение статуса заявки",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeStatusRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус заявки успешно изменен",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при изменении статуса заявки.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/requests/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Удаление заявки на отлов бродячих собак.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Requests"
+                ],
+                "summary": "Delete Request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Заявка успешно удалена",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных запроса.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при удалении заявки.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/roles": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получение всех ролей",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "roles"
+                ],
+                "summary": "Get all roles",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Role"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при получении ролей.",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ter-otdel": {
+            "get": {
+                "description": "Get all TerOtdels",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all TerOtdels",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.TerOtdel"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new TerOtdel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new TerOtdel",
+                "parameters": [
+                    {
+                        "description": "TerOtdel",
+                        "name": "terOtdel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTerOtdelDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ter-otdel/{id}": {
+            "delete": {
+                "description": "Delete a TerOtdel",
+                "summary": "Delete a TerOtdel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "TerOtdel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "description": "Получить список всех пользователей",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Получить список пользователей",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetUserDTOResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "delete": {
+                "description": "Удалить пользователя по ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Удалить пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -453,599 +1115,6 @@
                     }
                 }
             }
-        },
-        "/auth/sign-in": {
-            "post": {
-                "description": "Авторизация пользователя.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Sign In",
-                "parameters": [
-                    {
-                        "description": "Account credentials",
-                        "name": "account",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthCredentials"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/sign-up": {
-            "post": {
-                "description": "Регистрация нового пользователя.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Sign Up",
-                "parameters": [
-                    {
-                        "description": "Account information",
-                        "name": "account",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.Account"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AuthResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Получение всех запросов на отлов бродячих собак. Доступно только для районных администраторов.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Get All Requests",
-                "responses": {
-                    "200": {
-                        "description": "Все заявки\"  query param otdel_id - для получения заявок по отделу, доступно только для  админа",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.RequestFull"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при получении запросов.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Отправка запроса на отлов бродячей собаки. Поля source_id и applicant_id заполнять ID из справочников. Поля name в этих полях игнорируются при отправке запроса. Доступно для всех авторизованных пользователей.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Send Request",
-                "parameters": [
-                    {
-                        "description": "Request information",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.RequestFull"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Запрос успешно отправлен",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при отправке запроса",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests/change-status": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Изменение статуса заявки на отлов бродячей собаки. Поля id и status обязательны к заполнению.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Change Status Request",
-                "parameters": [
-                    {
-                        "description": "Change Status Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ChangeStatusRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Статус заявки успешно изменен.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при изменении статуса заявки.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests/download_act": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Получение URL для скачивания файла акта выполненого отлова в формате .docx. Требуется параметры number и year в query, номер заявки и год. Доступно для всех авторизованных пользователей.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Download Act File URL",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Request Number",
-                        "name": "number",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Request Year",
-                        "name": "year",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ResponseUrl"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при получении запросов.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests/download_multiDate": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать диапазон дат. Доступно только для районных администраторов.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Generate Multiple Requests By Date",
-                "parameters": [
-                    {
-                        "description": "Generate Multiple Requests By Date",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.GenerateMultipleRequestByDate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ResponseUrl"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при генерации запросов.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests/download_multiID": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать массив ID заявок. Доступно только для районных администраторов.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Generate Multiple Requests By IDs",
-                "parameters": [
-                    {
-                        "description": "Generate Multiple Requests By IDs",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.GenerateMultipleRequestByID"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ResponseUrl"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при генерации запросов.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests/download_request": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Получение URL для скачивания файла заявки в формате .docx. Требуется параметр number в query, номер заявки. Доступно для всех авторизованных пользователей.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Download Request File URL",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Request Number",
-                        "name": "number",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Request Year",
-                        "name": "year",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ResponseUrl"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при получении запросов.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests/upload_act": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Загрузка акта выполненого отлова любой формат файла, доступно админу и подрядчику.",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Upload Act File",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Request Number",
-                        "name": "number",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Request ID",
-                        "name": "id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Request Status",
-                        "name": "status",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "Act File",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Файл успешно загружен.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при загрузке акта.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/requests/{id}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Удаление заявки на отлов бродячей собаки по ID. Доступно только для районных администраторов.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Requests"
-                ],
-                "summary": "Delete Request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Request ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Заявка успешно удалена.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка в данных запроса.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка при удалении заявки.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/profile": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Получение профиля пользователя.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get User Profile",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.UserProfile"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/dto.Response"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -1070,62 +1139,19 @@
                 }
             }
         },
-        "dto.Account": {
-            "description": "Структура для создания учетной записи пользователя. Все поля обязательны к заполнению",
-            "type": "object",
-            "properties": {
-                "full_name": {
-                    "description": "Полное имя или название организации",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "ID пользователя",
-                    "type": "string"
-                },
-                "login": {
-                    "description": "Логин для входа в систему, должен быть уникальным",
-                    "type": "string"
-                },
-                "password": {
-                    "description": "Пароль для входа в систему",
-                    "type": "string"
-                },
-                "role": {
-                    "description": "Роль пользователя, например, \"admin\", \"user\", \"otdel\" и т.д.",
-                    "type": "string"
-                },
-                "role_name": {
-                    "description": "Название роли пользователя",
-                    "type": "string"
-                },
-                "source_id": {
-                    "description": "id тер отдела",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.AddNewTerOtdel": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.Applicant": {
-            "description": "Заявитель. Поле name игнорируется при создании заявки.",
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "уникальный идентификатор заявителя при Post запросе на создание заявки ОБЯЗАТЕЛЕН",
+                "district_id": {
                     "type": "string"
                 },
-                "is_permanent": {
-                    "description": "Является ли заявитель постоянным",
-                    "type": "boolean"
+                "full_name": {
+                    "type": "string"
                 },
-                "name": {
-                    "description": "Название заявителя игнорируется при создании заявки",
+                "id": {
+                    "type": "string"
+                },
+                "position": {
                     "type": "string"
                 }
             }
@@ -1186,43 +1212,7 @@
                 }
             }
         },
-        "dto.ChangePasswordRequest": {
-            "description": "Структура для смены пароля пользователя. Все поля обязательны к заполнению",
-            "type": "object",
-            "properties": {
-                "login": {
-                    "description": "Логин для входа в систему, должен быть уникальным",
-                    "type": "string"
-                },
-                "new_password": {
-                    "description": "Новый пароль для входа в систему",
-                    "type": "string"
-                },
-                "old_password": {
-                    "description": "Старый пароль для входа в систему",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ChangeProfileRequest": {
-            "description": "Структура для отправки запроса на изменение данных профиля",
-            "type": "object",
-            "properties": {
-                "full_name": {
-                    "description": "Полное имя или название организации",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "ID пользователя",
-                    "type": "string"
-                },
-                "login": {
-                    "description": "Логин для входа в систему, должен быть уникальным",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ChangeStatusRequest": {
+        "dto.ChangeStatusRequestDTO": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1231,6 +1221,97 @@
                 },
                 "status": {
                     "description": "Новый статус заявки (новая, в работе, выполнена, отменена)",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateApplicantDTO": {
+            "type": "object",
+            "properties": {
+                "district_id": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateRequestDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "applicant_id": {
+                    "type": "string"
+                },
+                "behavior": {
+                    "type": "string"
+                },
+                "contact_person": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "dogs_count": {
+                    "type": "integer"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "ter_otdel_id": {
+                    "type": "string"
+                },
+                "urgency": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateTerOtdelDTO": {
+            "type": "object",
+            "properties": {
+                "district_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateUserDTO": {
+            "type": "object",
+            "properties": {
+                "district_id": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "string"
+                },
+                "ter_otdel_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.District": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -1255,7 +1336,7 @@
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "is_accepted": {
                     "type": "boolean"
@@ -1277,26 +1358,10 @@
                 }
             }
         },
-        "dto.GenerateMultipleRequestByDate": {
-            "description": "генерация документа с несколькими заявками.",
+        "dto.Generate": {
             "type": "object",
             "properties": {
-                "date_from": {
-                    "description": "Дата с которой нужно выбрать заявки",
-                    "type": "string"
-                },
-                "date_to": {
-                    "description": "Дата по которую нужно выбрать заявки",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.GenerateMultipleRequestByID": {
-            "description": "генерация документа с несколькими заявками по ID",
-            "type": "object",
-            "properties": {
-                "ids": {
-                    "description": "Список ID заявок которые нужно включить в документ",
+                "requests_ids": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1304,99 +1369,83 @@
                 }
             }
         },
-        "dto.GetExternalUser": {
-            "description": "Структура для пполучения внешних пользователей",
+        "dto.GetUserDTO": {
             "type": "object",
             "properties": {
-                "bio": {
+                "district_id": {
                     "type": "string"
                 },
-                "city": {
-                    "type": "string"
-                },
-                "date_of_birth": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
+                "full_name": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "is_accepted": {
-                    "type": "boolean"
-                },
-                "last_name": {
+                "login": {
                     "type": "string"
                 },
-                "patronymic": {
+                "role_id": {
                     "type": "string"
                 },
-                "phone_number": {
-                    "type": "string"
-                },
-                "username": {
+                "ter_otdel_id": {
                     "type": "string"
                 }
             }
         },
-        "dto.RequestFull": {
-            "description": "Полная информация о заявке на отлов бродячей собаки. Поля id, number, status и created_at игнорируются при создании заявки.",
+        "dto.GetUserDTOResponse": {
             "type": "object",
             "properties": {
-                "address": {
-                    "description": "Адрес, где была замечена бродячая собака",
+                "status": {
                     "type": "string"
                 },
-                "applicant": {
-                    "description": "\"!!!!ВАЖНО название поля json applicant и source поменяты местами!!\"Источник информации от кого был получен запрос ID находится в справочнике",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.Source"
-                        }
-                    ]
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GetUserDTO"
+                    }
+                }
+            }
+        },
+        "dto.Request": {
+            "type": "object",
+            "properties": {
+                "act_file": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "applicant_id": {
+                    "type": "string"
                 },
                 "behavior": {
-                    "description": "Поведение собаки",
                     "type": "string"
                 },
                 "contact_person": {
-                    "description": "Контактные данные",
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "Дата и время создания заявки генерируется автоматически",
+                    "type": "string"
+                },
+                "district_id": {
                     "type": "string"
                 },
                 "dogs_count": {
-                    "description": "Количество собак",
                     "type": "integer"
                 },
                 "id": {
-                    "description": "уникальный идентификатор заявки при Post запросе не указывается",
                     "type": "string"
                 },
                 "number": {
-                    "description": "уникальный номер заявки, генерируется автоматически при создании заявки",
-                    "type": "string"
-                },
-                "source": {
-                    "description": "\"!!!!ВАЖНО название поля json applicant и source поменяты местами!!\"Заявитель ID находится в справочнике",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.Applicant"
-                        }
-                    ]
+                    "type": "integer"
                 },
                 "status": {
-                    "description": "Статус заявки (новая, в работе, выполнена, отменена) генерируется после создания заявки",
+                    "type": "string"
+                },
+                "ter_otdel_id": {
                     "type": "string"
                 },
                 "urgency": {
-                    "description": "срочность",
                     "type": "string"
                 }
             }
@@ -1429,16 +1478,30 @@
                 }
             }
         },
-        "dto.Source": {
-            "description": "Источник информации от кого был получен запрос. Поле name игнорируется при создании заявки.",
+        "dto.Role": {
             "type": "object",
             "properties": {
                 "id": {
-                    "description": "уникальный идентификатор источника при Post запросе на создание заявки ОБЯЗАТЕЛЕН",
                     "type": "string"
                 },
                 "name": {
-                    "description": "Название источника игнорируется при создании заявки",
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TerOtdel": {
+            "type": "object",
+            "properties": {
+                "district_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -1447,6 +1510,14 @@
             "description": "Структура для получения профиля пользователя. Все поля обязательны к заполнению",
             "type": "object",
             "properties": {
+                "district_id": {
+                    "description": "ID района",
+                    "type": "string"
+                },
+                "district_name": {
+                    "description": "Название района",
+                    "type": "string"
+                },
                 "full_name": {
                     "description": "Полное имя или название организации",
                     "type": "string"
@@ -1459,12 +1530,20 @@
                     "description": "Логин для входа в систему, должен быть уникальным",
                     "type": "string"
                 },
-                "role": {
+                "roleID": {
                     "description": "Роль пользователя, например, \"admin\", \"user\", \"otdel\" и т.д.",
                     "type": "string"
                 },
                 "role_name": {
                     "description": "Название роли пользователя",
+                    "type": "string"
+                },
+                "ter_otdel_id": {
+                    "description": "ID территориального отдела",
+                    "type": "string"
+                },
+                "ter_otdel_name": {
+                    "description": "Название территориального отдела",
                     "type": "string"
                 }
             }

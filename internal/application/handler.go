@@ -88,7 +88,7 @@ func NewHandlers(service Service, jwtService *jw.ServiceJWT) *Handlers {
 // @Success 200 {object} dto.ResponseUrl
 // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
-// @Router /api/requests/act/{filename}[get]
+// @Router /api/requests/act/{filename} [get]
 func (h *Handlers) DownloadAct(c *gin.Context) {
 
 	filename := c.Param("filename")

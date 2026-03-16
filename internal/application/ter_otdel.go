@@ -35,7 +35,7 @@ func (h *Handlers) CreateTerOtdel(c *gin.Context) {
 // @Summary Get all TerOtdels
 // @Description Get all TerOtdels
 // @Produce json
-// @Success 200 {object} []dto.TerOtdelDTO
+// @Success 200 {object} []dto.TerOtdel
 // @Failure 403 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /api/ter-otdel [get]

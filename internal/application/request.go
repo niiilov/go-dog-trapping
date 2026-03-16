@@ -96,7 +96,7 @@ func (h *Handlers) ChangeStatusRequest(c *gin.Context) {
 // @Tags Requests
 // @Accept json
 // @Produce json
-// @Param request body dto.DeleteRequestDTO true "Удаление заявки"
+// @Param id path string true "Request ID"
 // @Success 200 {object} dto.Response "Заявка успешно удалена"
 // @Failure 400 {object} dto.Response "Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response "Ошибка при удалении заявки."

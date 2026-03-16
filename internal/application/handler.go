@@ -1,11 +1,8 @@
 package application
 
 import (
-	"fmt"
 	"net/http"
-	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
@@ -13,22 +10,22 @@ import (
 )
 
 type Service interface {
-	CreateAccount(account *dto.Account) (string, error)
-	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, role_id string, sourceID string, err error)
-	SendRequest(request *dto.RequestFull) error
-	DeleteRequest(reqID string) error
-	UploadAct(req *dto.UploadActRequests, key string, filename string) error
+	// 	CreateAccount(account *dto.Account) (string, error)
 
-	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
-	ChangePassword(req *dto.ChangePasswordRequest) error
-	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
+	// 	SendRequest(request *dto.RequestFull) error
+	// 	DeleteRequest(reqID string) error
+	// 	UploadAct(req *dto.UploadActRequests, key string, filename string) error
 
-	GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate) (string, error)
-	GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (string, error)
+	// 	ChangeStatusRequest(req *dto.ChangeStatusRequest) error
+	// //	ChangePassword(req *dto.ChangePasswordRequest) error
+	// //	ChangeProfileInfo(req *dto.ChangeProfileRequest) error
 
-	GetAllRequests(year string) ([]*dto.RequestFull, error)
-	GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
-	GetUserProfile(userId string) (*dto.UserProfile, error)
+	// 	GenerateMultipleByDate(req *dto.GenerateMultipleRequestByDate) (string, error)
+	// 	GenerateMultipleByIDs(req *dto.GenerateMultipleRequestByID) (string, error)
+
+	// GetAllRequests(year string) ([]*dto.RequestFull, error)
+	// GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error)
+	// GetUserProfile(userId string) (*dto.UserProfile, error)
 	GetFileURL(objectKey string) string
 
 	CreateExternalUser(user *dto.ExternalUser) (int, error)
@@ -36,12 +33,41 @@ type Service interface {
 
 	ChangeAcceptedExternalUser(user *dto.AcceptExternalUserRequest) error
 
-	GetApplicants() ([]*dto.Applicant, error)
-	GetTerrOtdels() ([]*dto.Source, error)
+	// GetApplicants() ([]*dto.Applicant, error)
+	// GetTerrOtdels() ([]*dto.Source, error)
 
-	GetExternalUsers() ([]*dto.GetExternalUser, error)
+	// GetExternalUsers() ([]*dto.GetExternalUser, error)
 
-	AddNewTerOtdel(terOtdel *dto.AddNewTerOtdel) error
+	// AddNewTerOtdel(terOtdel *dto.AddNewTerOtdel) error
+
+	// Обнова
+
+	CreateUser(user *dto.CreateUserDTO) error
+	ValidateAccount(account *dto.AuthCredentials) (profile *dto.UserProfile, err error)
+	GetUsers() ([]*dto.GetUserDTO, error)
+	DeleteUser(userID string) error
+
+	CreateTerOtdel(terOtdel *dto.CreateTerOtdelDTO) (string, error)
+	GetTerOtdels() ([]*dto.TerOtdel, error)
+	GetTerrOtdelsByDistrictID(district_id string) ([]*dto.TerOtdel, error)
+	DeleteTerOtdel(id string) error
+
+	CreateDistrict(district *dto.District) error
+	GetDistricts() ([]*dto.District, error)
+	DeleteDistrict(id string) error
+
+	GetApplicantByDistrictID(districtID string) ([]*dto.Applicant, error)
+	CreateApplicant(applicant *dto.CreateApplicantDTO) error
+
+	CreateRequest(request *dto.CreateRequestDTO) error
+	GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error)
+	GetRequestsByDistrictID(id string) ([]*dto.GetRequestsDTO, error)
+	GetRequestsByDistrictIDs(district_id string, ids []string) ([]*dto.GetRequestsDTO, error)
+	ChangeStatusRequest(req *dto.ChangeStatusRequestDTO) error
+	DeleteRequest(id string) error
+	AddActFile(reqID string, actFilename, actFilePath string) error
+
+	GetRoles() ([]*dto.Role, error)
 }
 type Handlers struct {
 	jwtService *jw.ServiceJWT
@@ -53,299 +79,19 @@ func NewHandlers(service Service, jwtService *jw.ServiceJWT) *Handlers {
 	return &Handlers{service: service, jwtService: jwtService}
 }
 
-// @Summary Send Request
-// @Security BearerAuth
-// @Description Отправка запроса на отлов бродячей собаки. Поля source_id и applicant_id заполнять ID из справочников. Поля name в этих полях игнорируются при отправке запроса. Доступно для всех авторизованных пользователей.
-// @Tags Requests
-// @Accept json
-// @Produce json
-// @Param request body dto.RequestFull true "Request information"
-// @Success 200 {object} dto.Response	"Запрос успешно отправлен"
-// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при отправке запроса"
-// @Router /requests [post]
-func (h *Handlers) SendRequest(c *gin.Context) {
-
-	var reqStruct dto.RequestFull
-	if err := c.Bind(&reqStruct); err != nil {
-		//логи
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-
-	err := h.service.SendRequest(&reqStruct)
-	if err != nil {
-		// опять логи
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при отправке запроса"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Запрос успешно отправлен"})
-}
-
-// @Summary Change Status Request
-// @Security BearerAuth
-// @Description Изменение статуса заявки на отлов бродячей собаки. Поля id и status обязательны к заполнению.
-// @Tags Requests
-// @Accept json
-// @Produce json
-// @Param request body dto.ChangeStatusRequest true "Change Status Request"
-// @Success 200 {object} dto.Response	"Статус заявки успешно изменен."
-// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при изменении статуса заявки."
-// @Router /requests/change-status [post]
-func (h *Handlers) ChangeStatusRequest(c *gin.Context) {
-	var reqStruct dto.ChangeStatusRequest
-	if err := c.Bind(&reqStruct); err != nil {
-		//логи
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-	err := h.service.ChangeStatusRequest(&reqStruct)
-	if err != nil {
-		// опять логи
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при изменении статуса заявки."})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Статус заявки успешно изменен."})
-}
-
-// @Summary Get All Requests
-// @Security BearerAuth
-// @Description Получение всех запросов на отлов бродячих собак. Доступно только для районных администраторов.
-// @Tags Requests
-// @Produce json
-// @Success 200 {object} []dto.RequestFull	"Все заявки"  query param otdel_id - для получения заявок по отделу, доступно только для  админа
-// @Failure 400 {object} dto.Response 	 "Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response 	 "Ошибка при получении запросов."
-// @Router /requests [get]
-func (h *Handlers) GetAllRequests(c *gin.Context) {
-	role, exists := c.Get("role")
-
-	if !exists {
-		c.JSON(http.StatusForbidden, gin.H{"status": "error", "message": "Доступ запрещен."})
-		return
-	}
-	year := c.Query("year")
-	fmt.Println("year:", year)
-
-	if dto.CanSeeAllRequests(role.(string)) {
-
-		if otdel_id := c.Query("otdel_id"); otdel_id != "" {
-			h.GetRequestsByOtdelFunc(c, otdel_id, year)
-			return
-		}
-		requests, err := h.service.GetAllRequests(year)
-		if err != nil {
-			// опять логи
-			fmt.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении запросов."})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
-		return
-	} else {
-		sourceID, exists := c.Get("source_id")
-
-		if !exists {
-			c.JSON(http.StatusForbidden, gin.H{"status": "error", "message": "Доступ запрещен."})
-			return
-		}
-		fmt.Println("ВОТ ID", sourceID)
-		h.GetRequestsByOtdelFunc(c, sourceID.(string), year)
-	}
-
-}
-
-// GetRequestsByOtdelFunc - вспомогательная функция для получения заявок по отделу
-func (h *Handlers) GetRequestsByOtdelFunc(c *gin.Context, otdel_id string, year string) {
-
-	requests, err := h.service.GetRequestsByOtdel(otdel_id, year)
-
-	if err != nil {
-
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении запросов."})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": requests})
-}
-
-// @Summary Delete Request
-// @Security BearerAuth
-// @Description Удаление заявки на отлов бродячей собаки по ID. Доступно только для районных администраторов.
-// @Tags Requests
-// @Produce json
-// @Param id path string true "Request ID"
-// @Success 200 {object} dto.Response	"Заявка успешно удалена."
-// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при удалении заявки."
-// @Router /requests/{id} [delete]
-func (h *Handlers) DeleteRequest(c *gin.Context) {
-	reqID := c.Param("id")
-
-	if err := h.service.DeleteRequest(reqID); err != nil {
-		// опять логи
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при удалении заявки."})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Заявка успешно удалена."})
-}
-
-// @Summary Download Request File URL
-// @Security BearerAuth
-// @Description Получение URL для скачивания файла заявки в формате .docx. Требуется параметр number в query, номер заявки. Доступно для всех авторизованных пользователей.
-// @Tags Requests
-// @Produce json
-// @Param number query string true "Request Number"
-// @Param year query string true "Request Year"
-// @Success 200 {object} dto.ResponseUrl
-// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
-// @Router /requests/download_request [get]
-func (h *Handlers) DownloadRequest(c *gin.Context) {
-	number := c.Query("number")
-	year := c.Query("year")
-	fmt.Println(number)
-	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-	filename := "zayavka_" + number + "_" + year + ".xlsx"
-
-	fmt.Println(filename)
-	url := h.service.GetFileURL(filename)
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
-}
-
-// @Summary Generate Multiple Requests By Date
-// @Security BearerAuth
-// @Description Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать диапазон дат. Доступно только для районных администраторов.
-// @Tags Requests
-// @Accept json
-// @Produce json
-// @Param request body dto.GenerateMultipleRequestByDate true "Generate Multiple Requests By Date"
-// @Success 200 {object} dto.ResponseUrl
-// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при генерации запросов."
-// @Router /requests/download_multiDate [post]
-func (h *Handlers) GenerateMultipleByDate(c *gin.Context) {
-	var request dto.GenerateMultipleRequestByDate
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-	fmt.Println("GenerateMultiple request:", request)
-	url, err := h.service.GenerateMultipleByDate(&request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при генерации запросов."})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
-}
-
-// @Summary Generate Multiple Requests By IDs
-// @Security BearerAuth
-// @Description Генерация нескольких заявок на отлов бродячих собак в одном файле. Требуется передать массив ID заявок. Доступно только для районных администраторов.
-// @Tags Requests
-// @Accept json
-// @Produce json
-// @Param request body dto.GenerateMultipleRequestByID true "Generate Multiple Requests By IDs"
-// @Success 200 {object} dto.ResponseUrl
-// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при генерации запросов."
-// @Router /requests/download_multiID [post]
-func (h *Handlers) GenerateMultipleByIDs(c *gin.Context) {
-	var request dto.GenerateMultipleRequestByID
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-	fmt.Println("GenerateMultiple request:", request)
-	url, err := h.service.GenerateMultipleByIDs(&request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при генерации запросов."})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
-}
-
-// @Summary Upload Act File
-// @Security BearerAuth
-// @Description Загрузка акта выполненого отлова любой формат файла, доступно админу и подрядчику.
-// @Tags Requests
-// @Accept multipart/form-data
-// @Produce json
-// @Param number formData string true "Request Number"
-// @Param id formData string true "Request ID"
-// @Param status formData string true "Request Status"
-// @Param file formData file true "Act File"
-// @Success 200 {object} dto.Response	"Файл успешно загружен."
-// @Failure 400 {object} dto.Response  	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при загрузке акта."
-// @Router /requests/upload_act [post]
-func (h *Handlers) UploadAct(c *gin.Context) {
-
-	var req dto.UploadActRequests
-	req.ID = c.PostForm("id")
-	req.Number = c.PostForm("number")
-	req.Status = c.PostForm("status")
-
-	file, err := c.FormFile("file")
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка при получении файла."})
-		return
-	}
-
-	sharedDir := "/app/shared/"
-	filename := "act_" + req.Number + "_" + time.Now().Format("2006") + filepath.Ext(file.Filename)
-	fmt.Println(filename)
-
-	if err := c.SaveUploadedFile(file, sharedDir+filename); err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при сохранении файла."})
-		return
-	}
-
-	if err = h.service.UploadAct(&req, filename, sharedDir+filename); err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при загрузке акта."})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Файл успешно загружен."})
-}
-
 // @Summary Download Act File URL
 // @Security BearerAuth
-// @Description Получение URL для скачивания файла акта выполненого отлова в формате .docx. Требуется параметры number и year в query, номер заявки и год. Доступно для всех авторизованных пользователей.
+// @Description Получение URL для скачивания файла акта
 // @Tags Requests
 // @Produce json
-// @Param number query string true "Request Number"
-// @Param year query string true "Request Year"
+// @Param filename path string true "Filename"
 // @Success 200 {object} dto.ResponseUrl
 // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при получении запросов."
-// @Router /requests/download_act [get]
+// @Router /api/requests/act/{filename}[get]
 func (h *Handlers) DownloadAct(c *gin.Context) {
-	var req dto.DownloadActRequest
-	req.Number = c.Query("number")
-	req.Year = c.Query("year")
 
-	if req.Number == "" || req.Year == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-	filename := "act_" + req.Number + "_" + req.Year + ".docx"
-
+	filename := c.Param("filename")
 	url := h.service.GetFileURL(filename)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "url": url})
@@ -462,74 +208,4 @@ func (h *Handlers) ChangeAcceptedExternalUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "External user status updated successfully"})
-}
-
-// @Summary Получить список заявителей
-// @Tags applicants
-// @Produce json
-// @Success 200 {object} []dto.Applicant
-// @Failure 500 {object} dto.Response	"Ошибка при получении заявителей."
-// @Router /api/applicants [get]
-func (h *Handlers) GetApplicants(c *gin.Context) {
-	applicants, err := h.service.GetApplicants()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"source": applicants})
-}
-
-// @Summary Получить список территориальных отделов
-// @Security BearerAuth
-// @Tags applicants
-// @Produce json
-// @Success 200 {object} []dto.Source
-// @Failure 500 {object} dto.Response	"Ошибка при получении территориальных отделов."
-// @Router /api/sources [get]
-func (h *Handlers) GetTerrOtdels(c *gin.Context) {
-	otdels, err := h.service.GetTerrOtdels()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"applicant": otdels})
-}
-
-// @Summary Получить список внешних пользователей
-// @Tags external-users
-// @Produce json
-// @Success 200 {object} []dto.GetExternalUser
-// @Failure 500 {object} dto.Response	"Ошибка при получении внешних пользователей."
-// @Router /api/external/users [get]
-func (h *Handlers) GetExternalUsers(c *gin.Context) {
-	users, err := h.service.GetExternalUsers()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"external_users": users})
-}
-
-// @Summary Добавить новый тер отдел
-// @Tags territorial-departments
-// @Accept json
-// @Produce json
-// @Param terOtdel body dto.AddNewTerOtdel true "New territorial department"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
-// @Router /api/sources [post]
-func (h *Handlers) AddNewTerOtdel(c *gin.Context) {
-	var terOtdel dto.AddNewTerOtdel
-	if err := c.BindJSON(&terOtdel); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := h.service.AddNewTerOtdel(&terOtdel); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "New territorial department added successfully"})
 }

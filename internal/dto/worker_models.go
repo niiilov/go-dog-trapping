@@ -12,8 +12,8 @@ type RequestForGeneratingSomething struct {
 // @Description Структура для генерации заявки. Все поля обязательны к заполнению
 type RequestForGenerating struct {
 	Number        string `json:"number"`         //уникальный номер заявки ОБЯЗАТЕЛЕН
-	Applicant     string `json:"applicant_name"` //Заявитель ID находится в справочнике
-	Source        string `json:"source_name"`    //Источник информации от кого был получен запрос ID находится в справочнике
+	ApplicantName string `json:"applicant_name"` //Заявитель ID находится в справочнике
+	TerOtdelName  string `json:"source_name"`    //Источник информации от кого был получен запрос ID находится в справочнике
 	Address       string `json:"address"`        //Адрес, где была замечена бродячая собака
 	DogsCount     int    `json:"dogs_count"`     //Количество собак
 	Behavior      string `json:"behavior"`       //Поведение собаки

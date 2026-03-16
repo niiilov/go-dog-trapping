@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -29,6 +31,7 @@ type AwsCreds struct {
 
 func NewConfig() *Config {
 
+	godotenv.Load(".env")
 	pg := Postgres{}
 
 	pg.Host = os.Getenv("PG_HOST")

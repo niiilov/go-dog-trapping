@@ -7,60 +7,39 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
 )
 
-func SendRequestForGenerating(reqData *dto.RequestForGenerating) error {
+func GenerateMultipleDocument(c *gin.Context, reqData *dto.RequestForGeneratingSomething) {
 	jsonData, err := json.Marshal(reqData)
 	if err != nil {
-		return fmt.Errorf("failed to marshal request: %w", err)
-	}
-
-	client := &http.Client{}
-	resp, err := client.Post("http://worker:8001/generate", "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("failed to send POST request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	fmt.Println(string(body))
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("server returned non-OK status: %s", resp.Status)
-	}
-
-	return nil
-}
-
-func SendRequestForGeneratingSomething(reqData *dto.RequestForGeneratingSomething) error {
-	jsonData, err := json.Marshal(reqData)
-	if err != nil {
-		return fmt.Errorf("failed to marshal request: %w", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("failed to marshal request: %v", err)})
+		return
 	}
 	fmt.Println("Sending request with data:", string(jsonData))
 
 	client := &http.Client{}
-	resp, err := client.Post("http://worker:8001/generate-multiple", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := client.Post("http://worker-sobaki:8001/generate-multiple", "application/json", bytes.NewBuffer(jsonData))
+
 	if err != nil {
-		return fmt.Errorf("failed to send POST request: %w", err)
+		fmt.Println("ЭТО ТЕСТ", bytes.NewReader(jsonData))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
+
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
+	// Пробрасываем заголовки от питона (Content-Disposition, Content-Type)
+	for key, values := range resp.Header {
+		for _, v := range values {
+			c.Header(key, v)
+		}
 	}
 
-	fmt.Println(string(body))
+	c.Status(resp.StatusCode)
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("server returned non-OK status: %s", resp.Status)
-	}
+	// Стримим тело — не грузим весь файл в память
+	io.Copy(c.Writer, resp.Body)
 
-	return nil
 }

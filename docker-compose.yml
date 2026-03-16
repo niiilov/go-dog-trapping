@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: app
+    container_name: sobaki
     env_file:
       - .env
     ports:
@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
 
   worker:
-    container_name: worker
+    container_name: worker-sobaki
 
     ports:
       - "8001:8001"

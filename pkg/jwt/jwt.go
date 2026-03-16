@@ -34,9 +34,9 @@ func NewServiceJWT(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey,
 	}
 }
 
-func (j *ServiceJWT) DecodeKey(tokenString string) (*jwt.RegisteredClaims, string, string, error) {
+func (j *ServiceJWT) DecodeKey(tokenString string) (*jwt.RegisteredClaims, string, string, string, error) {
 	if tokenString == "" {
-		return nil, "", "", ErrorUndefinedToken
+		return nil, "", "", "", ErrorUndefinedToken
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{},
@@ -44,18 +44,19 @@ func (j *ServiceJWT) DecodeKey(tokenString string) (*jwt.RegisteredClaims, strin
 			return j.publicKey, nil
 		})
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", "", err
 	}
 	token2, _, _ := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
 	role, _ := token2.Claims.(jwt.MapClaims)["role"].(string)
-	sourceID, _ := token2.Claims.(jwt.MapClaims)["source_id"].(string)
+	districtID, _ := token2.Claims.(jwt.MapClaims)["district_id"].(string)
+	terOtdelID, _ := token2.Claims.(jwt.MapClaims)["ter_otdel_id"].(string)
 
 	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if ok && token.Valid {
-		return claims, role, sourceID, nil
+		return claims, role, districtID, terOtdelID, nil
 	}
 
-	return nil, "", "", ErrorInvalidToken
+	return nil, "", "", "", ErrorInvalidToken
 }
 
 func (j *ServiceJWT) Encode(claims jwt.Claims) (string, error) {

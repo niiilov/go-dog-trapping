@@ -3,9 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"time"
-
-	sd "database/sql"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -54,343 +51,344 @@ func (r *Repository) CreateAccount(account *dto.Account) (string, error) {
 	return id, nil
 }
 
-func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role string, sourceID string, err error) {
-	fmt.Println("ТУТА")
-	query := sq.Select("id", "password_hash", "role", "source_id").
-		From("users").
-		Where(sq.Eq{"login": account.Login}).
-		PlaceholderFormat(sq.Dollar)
+// func (r *Repository) ValidateAccount(account *dto.AuthCredentials) (user *dto.UserProfile, hashPass string, role string, sourceID string, err error) {
+// 	fmt.Println("ТУТА")
+// 	query := sq.Select("id", "password_hash", "role", "source_id").
+// 		From("users").
+// 		Where(sq.Eq{"login": account.Login}).
+// 		PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, "", "", "", err
-	}
-	var id string
-	var source sd.NullString
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
+// 		return nil, "", "", "", err
+// 	}
+// 	var id string
+// 	var source sd.NullString
 
-	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id, &hashPass, &role, &source)
-	if err != nil {
-		return nil, "", "", "", err
-	}
-	user, err = r.GetUserProfile(id)
+// 	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&id, &hashPass, &role, &source)
+// 	if err != nil {
+// 		return nil, "", "", "", err
+// 	}
+// 	user, err = r.GetUserProfile(id)
 
-	if err != nil {
-		return nil, "", "", "", err
-	}
+// 	if err != nil {
+// 		return nil, "", "", "", err
+// 	}
 
-	user.ID = id
-	fmt.Println(user, role, source)
-	if source.Valid {
-		sourceID = source.String
-	} else {
-		sourceID = ""
-	}
+// 	user.ID = id
+// 	fmt.Println(user, role, source)
+// 	if source.Valid {
+// 		sourceID = source.String
+// 	} else {
+// 		sourceID = ""
+// 	}
 
-	return user, hashPass, role, sourceID, nil
-}
+// 	return user, hashPass, role, sourceID, nil
+// }
 
-func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {
+// func (r *Repository) SendRequest(request *dto.RequestFull) (int, error) {
 
-	query := sq.Insert("requests").Columns("source_id", "applicant_id", "address", "dogs_count", "behavior", "urgency", "contact_person").
-		Values(request.Source.ID, request.Applicant.ID, request.Address, request.DogsCount, request.Behavior, request.Urgency, request.ContactPerson).
-		Suffix("RETURNING number").
-		PlaceholderFormat(sq.Dollar)
+// 	query := sq.Insert("requests").Columns("source_id", "applicant_id", "address", "dogs_count", "behavior", "urgency", "contact_person").
+// 		Values(request.Source.ID, request.Applicant.ID, request.Address, request.DogsCount, request.Behavior, request.Urgency, request.ContactPerson).
+// 		Suffix("RETURNING number").
+// 		PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := query.ToSql()
-	if err != nil {
-		fmt.Println(err)
-		return 0, err
-	}
-	fmt.Println("ЗАПРОС", sql)
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return 0, err
+// 	}
+// 	fmt.Println("ЗАПРОС", sql)
 
-	var number int
+// 	var number int
 
-	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&number)
-	if err != nil {
-		fmt.Println(err)
-		return 0, err
-	}
+// 	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&number)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return 0, err
+// 	}
 
-	selectQuery := sq.Select("applicants.name", "request_sources.name").
-		From("requests").
-		Join("applicants ON requests.applicant_id = applicants.id").
-		Join("request_sources ON requests.source_id = request_sources.id").
-		Where(sq.Eq{"requests.number": number}).
-		PlaceholderFormat(sq.Dollar)
+// 	selectQuery := sq.Select("applicants.name", "request_sources.name").
+// 		From("requests").
+// 		Join("applicants ON requests.applicant_id = applicants.id").
+// 		Join("request_sources ON requests.source_id = request_sources.id").
+// 		Where(sq.Eq{"requests.number": number}).
+// 		PlaceholderFormat(sq.Dollar)
 
-	sql, selectArgs, err := selectQuery.ToSql()
-	if err != nil {
-		return 0, err
-	}
-	err = r.pg.QueryRow(context.Background(), sql, selectArgs...).Scan(&request.Applicant.Name, &request.Source.Name)
-	if err != nil {
-		return 0, err
-	}
+// 	sql, selectArgs, err := selectQuery.ToSql()
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	err = r.pg.QueryRow(context.Background(), sql, selectArgs...).Scan(&request.Applicant.Name, &request.Source.Name)
+// 	if err != nil {
+// 		return 0, err
+// 	}
 
-	return number, nil
-}
+// 	return number, nil
+// }
 
-func (r *Repository) ChangeStatusRequest(req *dto.ChangeStatusRequest) error {
+// func (r *Repository) ChangeStatusRequest(req *dto.ChangeStatusRequest) error {
 
-	query := sq.Update("requests").
-		Set("status", req.Status).
-		Where(sq.Eq{"id": req.ID}).
-		PlaceholderFormat(sq.Dollar)
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return err
-	}
+// 	query := sq.Update("requests").
+// 		Set("status", req.Status).
+// 		Where(sq.Eq{"id": req.ID}).
+// 		PlaceholderFormat(sq.Dollar)
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
-	if err != nil {
-		return err
-	}
+// 	cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("no request found with id: %s", req.ID)
-	}
+// 	if cmdTag.RowsAffected() == 0 {
+// 		return fmt.Errorf("no request found with id: %s", req.ID)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (r *Repository) GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error) {
-	var query sq.SelectBuilder
-	if year == "" {
-		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
-			From("requests").
-			InnerJoin("request_sources ON requests.source_id = request_sources.id").
-			InnerJoin("applicants ON requests.applicant_id = applicants.id").
-			Where(sq.Eq{"requests.source_id": otdel_id}).
-			OrderBy("requests.created_at DESC").
-			PlaceholderFormat(sq.Dollar)
-	} else {
-		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
-			From("requests").
-			InnerJoin("request_sources ON requests.source_id = request_sources.id").
-			InnerJoin("applicants ON requests.applicant_id = applicants.id").
-			Where(sq.Eq{"requests.source_id": otdel_id}).
-			Where(sq.Eq{"requests.year": year}).
-			OrderBy("requests.created_at DESC").
-			PlaceholderFormat(sq.Dollar)
-	}
+// func (r *Repository) GetRequestsByOtdel(otdel_id string, year string) ([]*dto.RequestFull, error) {
+// 	var query sq.SelectBuilder
+// 	if year == "" {
+// 		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
+// 			From("requests").
+// 			InnerJoin("request_sources ON requests.source_id = request_sources.id").
+// 			InnerJoin("applicants ON requests.applicant_id = applicants.id").
+// 			Where(sq.Eq{"requests.source_id": otdel_id}).
+// 			OrderBy("requests.created_at DESC").
+// 			PlaceholderFormat(sq.Dollar)
+// 	} else {
+// 		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
+// 			From("requests").
+// 			InnerJoin("request_sources ON requests.source_id = request_sources.id").
+// 			InnerJoin("applicants ON requests.applicant_id = applicants.id").
+// 			Where(sq.Eq{"requests.source_id": otdel_id}).
+// 			Where(sq.Eq{"requests.year": year}).
+// 			OrderBy("requests.created_at DESC").
+// 			PlaceholderFormat(sq.Dollar)
+// 	}
 
-	sql, args, err := query.ToSql()
-	if err != nil {
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
 
-		return nil, err
-	}
+// 		return nil, err
+// 	}
 
-	rows, err := r.pg.Query(context.Background(), sql, args...)
-	if err != nil {
-		fmt.Println("Error querying requests:", err)
-		return nil, err
-	}
-	defer rows.Close()
+// 	rows, err := r.pg.Query(context.Background(), sql, args...)
+// 	if err != nil {
+// 		fmt.Println("Error querying requests:", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
 
-	var requests []*dto.RequestFull
-	for rows.Next() {
-		var req dto.RequestFull
+// 	var requests []*dto.RequestFull
+// 	for rows.Next() {
+// 		var req dto.RequestFull
 
-		err := rows.Scan(
-			&req.ID,
-			&req.Number,
-			&req.Source.ID, &req.Applicant.ID,
-			&req.Address,
-			&req.DogsCount,
-			&req.Behavior, &req.Urgency, &req.ContactPerson, &req.Status, &req.CreatedAt,
-			&req.Source.Name, &req.Applicant.Name,
-		)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println(err)
-		requests = append(requests, &req)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+// 		err := rows.Scan(
+// 			&req.ID,
+// 			&req.Number,
+// 			&req.Source.ID, &req.Applicant.ID,
+// 			&req.Address,
+// 			&req.DogsCount,
+// 			&req.Behavior, &req.Urgency, &req.ContactPerson, &req.Status, &req.CreatedAt,
+// 			&req.Source.Name, &req.Applicant.Name,
+// 		)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		fmt.Println(err)
+// 		requests = append(requests, &req)
+// 	}
+// 	if err := rows.Err(); err != nil {
+// 		return nil, err
+// 	}
 
-	return requests, nil
+// 	return requests, nil
 
-}
+// }
 
-func (r *Repository) GetAllRequests(year string) ([]*dto.RequestFull, error) {
-	var query sq.SelectBuilder
-	if year == "" {
-		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
-			From("requests").
-			InnerJoin("request_sources ON requests.source_id = request_sources.id").
-			InnerJoin("applicants ON requests.applicant_id = applicants.id").
-			OrderBy("requests.created_at DESC").
-			PlaceholderFormat(sq.Dollar)
-	} else {
-		fmt.Println("год передан")
-		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
-			From("requests").
-			InnerJoin("request_sources ON requests.source_id = request_sources.id").
-			InnerJoin("applicants ON requests.applicant_id = applicants.id").
-			Where(sq.Eq{"requests.year": year}).
-			OrderBy("requests.created_at DESC").
-			PlaceholderFormat(sq.Dollar)
-	}
-	sql, args, err := query.ToSql()
-	if err != nil {
+// func (r *Repository) GetAllRequests(year string) ([]*dto.RequestFull, error) {
+// 	var query sq.SelectBuilder
+// 	if year == "" {
+// 		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
+// 			From("requests").
+// 			InnerJoin("request_sources ON requests.source_id = request_sources.id").
+// 			InnerJoin("applicants ON requests.applicant_id = applicants.id").
+// 			OrderBy("requests.created_at DESC").
+// 			PlaceholderFormat(sq.Dollar)
+// 	} else {
+// 		fmt.Println("год передан")
+// 		query = sq.Select("requests.id, requests.number, requests.source_id, requests.applicant_id, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, requests.status, requests.created_at, request_sources.name, applicants.name").
+// 			From("requests").
+// 			InnerJoin("request_sources ON requests.source_id = request_sources.id").
+// 			InnerJoin("applicants ON requests.applicant_id = applicants.id").
+// 			Where(sq.Eq{"requests.year": year}).
+// 			OrderBy("requests.created_at DESC").
+// 			PlaceholderFormat(sq.Dollar)
+// 	}
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
 
-		return nil, err
-	}
+// 		return nil, err
+// 	}
 
-	rows, err := r.pg.Query(context.Background(), sql, args...)
-	if err != nil {
-		fmt.Println("Error querying requests:", err)
-		return nil, err
-	}
-	defer rows.Close()
+// 	rows, err := r.pg.Query(context.Background(), sql, args...)
+// 	if err != nil {
+// 		fmt.Println("Error querying requests:", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
 
-	var requests []*dto.RequestFull
-	for rows.Next() {
-		var req dto.RequestFull
+// 	var requests []*dto.RequestFull
+// 	for rows.Next() {
+// 		var req dto.RequestFull
 
-		err := rows.Scan(
-			&req.ID,
-			&req.Number,
-			&req.Source.ID, &req.Applicant.ID,
-			&req.Address,
-			&req.DogsCount,
-			&req.Behavior, &req.Urgency, &req.ContactPerson, &req.Status, &req.CreatedAt,
-			&req.Source.Name, &req.Applicant.Name,
-		)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println(err)
-		requests = append(requests, &req)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+// 		err := rows.Scan(
+// 			&req.ID,
+// 			&req.Number,
+// 			&req.Source.ID, &req.Applicant.ID,
+// 			&req.Address,
+// 			&req.DogsCount,
+// 			&req.Behavior, &req.Urgency, &req.ContactPerson, &req.Status, &req.CreatedAt,
+// 			&req.Source.Name, &req.Applicant.Name,
+// 		)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		fmt.Println(err)
+// 		requests = append(requests, &req)
+// 	}
+// 	if err := rows.Err(); err != nil {
+// 		return nil, err
+// 	}
 
-	return requests, nil
-}
+// 	return requests, nil
+// }
 
-func (r *Repository) GetRequestsByDate(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error) {
-	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", dateFrom)
+// func (r *Repository) GetRequestsByDate(dateFrom *time.Time, dateTo *time.Time) ([]*dto.RequestForGenerating, error) {
+// 	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", dateFrom)
 
-	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
-		From("requests").
-		InnerJoin("request_sources ON requests.source_id = request_sources.id").
-		InnerJoin("applicants ON requests.applicant_id = applicants.id").
-		OrderBy("requests.created_at DESC").
-		Where(sq.And{
-			sq.GtOrEq{"requests.created_at": dateFrom},
-			sq.LtOrEq{"requests.created_at": dateTo},
-		}).
-		PlaceholderFormat(sq.Dollar)
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, err
-	}
+// 	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
+// 		From("requests").
+// 		InnerJoin("request_sources ON requests.source_id = request_sources.id").
+// 		InnerJoin("applicants ON requests.applicant_id = applicants.id").
+// 		OrderBy("requests.created_at DESC").
+// 		Where(sq.And{
+// 			sq.GtOrEq{"requests.created_at": dateFrom},
+// 			sq.LtOrEq{"requests.created_at": dateTo},
+// 		}).
+// 		PlaceholderFormat(sq.Dollar)
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	rows, err := r.pg.Query(context.Background(), sql, args...)
-	if err != nil {
-		fmt.Println("Error querying requests:", err)
-		return nil, err
-	}
-	defer rows.Close()
+// 	rows, err := r.pg.Query(context.Background(), sql, args...)
+// 	if err != nil {
+// 		fmt.Println("Error querying requests:", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
 
-	var requests []*dto.RequestForGenerating
-	for rows.Next() {
-		var req dto.RequestForGenerating
+// 	var requests []*dto.RequestForGenerating
+// 	for rows.Next() {
+// 		var req dto.RequestForGenerating
 
-		err := rows.Scan(
+// 		err := rows.Scan(
 
-			&req.Number,
+// 			&req.Number,
 
-			&req.Address,
-			&req.DogsCount,
-			&req.Behavior, &req.Urgency, &req.ContactPerson,
-			&req.Source, &req.Applicant,
-		)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println(err)
-		requests = append(requests, &req)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+// 			&req.Address,
+// 			&req.DogsCount,
+// 			&req.Behavior, &req.Urgency, &req.ContactPerson,
+// 			&req.Source, &req.Applicant,
+// 		)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		fmt.Println(err)
+// 		requests = append(requests, &req)
+// 	}
+// 	if err := rows.Err(); err != nil {
+// 		return nil, err
+// 	}
 
-	fmt.Println(requests)
+// 	fmt.Println(requests)
 
-	return requests, nil
-}
+// 	return requests, nil
+// }
 
-func (r *Repository) GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error) {
-	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", reqIDs)
+// func (r *Repository) GetRequestsByIDs(reqIDs []string) ([]*dto.RequestForGenerating, error) {
+// 	fmt.Println("РЕПОЗИТОРИЙ ТУТАЭ", reqIDs)
 
-	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
-		From("requests").
-		InnerJoin("request_sources ON requests.source_id = request_sources.id").
-		InnerJoin("applicants ON requests.applicant_id = applicants.id").
-		OrderBy("requests.created_at DESC").
-		Where(sq.Eq{"requests.id": reqIDs}).
-		PlaceholderFormat(sq.Dollar)
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, err
-	}
+// 	query := sq.Select("requests.number, requests.address, requests.dogs_count, requests.behavior, requests.urgency, requests.contact_person, request_sources.name, applicants.name").
+// 		From("requests").
+// 		InnerJoin("request_sources ON requests.source_id = request_sources.id").
+// 		InnerJoin("applicants ON requests.applicant_id = applicants.id").
+// 		OrderBy("requests.created_at DESC").
+// 		Where(sq.Eq{"requests.id": reqIDs}).
+// 		PlaceholderFormat(sq.Dollar)
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	rows, err := r.pg.Query(context.Background(), sql, args...)
-	if err != nil {
-		fmt.Println("Error querying requests:", err)
-		return nil, err
-	}
-	defer rows.Close()
+// 	rows, err := r.pg.Query(context.Background(), sql, args...)
+// 	if err != nil {
+// 		fmt.Println("Error querying requests:", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
 
-	var requests []*dto.RequestForGenerating
-	for rows.Next() {
-		var req dto.RequestForGenerating
+// 	var requests []*dto.RequestForGenerating
+// 	for rows.Next() {
+// 		var req dto.RequestForGenerating
 
-		err := rows.Scan(
+// 		err := rows.Scan(
 
-			&req.Number,
+// 			&req.Number,
 
-			&req.Address,
-			&req.DogsCount,
-			&req.Behavior, &req.Urgency, &req.ContactPerson,
-			&req.Source, &req.Applicant,
-		)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println(err)
-		requests = append(requests, &req)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+// 			&req.Address,
+// 			&req.DogsCount,
+// 			&req.Behavior, &req.Urgency, &req.ContactPerson,
+// 			&req.Source, &req.Applicant,
+// 		)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		fmt.Println(err)
+// 		requests = append(requests, &req)
+// 	}
+// 	if err := rows.Err(); err != nil {
+// 		return nil, err
+// 	}
 
-	fmt.Println(requests)
+// 	fmt.Println(requests)
 
-	return requests, nil
-}
-func (r *Repository) DeleteRequest(reqID string) error {
-	query := sq.Delete("requests").
-		Where(sq.Eq{"id": reqID}).
-		PlaceholderFormat(sq.Dollar)
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return err
-	}
-	cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
-	if err != nil {
-		return err
-	}
-	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("no request found with id: %s", reqID)
-	}
-	return nil
-}
+// 	return requests, nil
+// }
+
+//	func (r *Repository) DeleteRequest(reqID string) error {
+//		query := sq.Delete("requests").
+//			Where(sq.Eq{"id": reqID}).
+//			PlaceholderFormat(sq.Dollar)
+//		sql, args, err := query.ToSql()
+//		if err != nil {
+//			return err
+//		}
+//		cmdTag, err := r.pg.Exec(context.Background(), sql, args...)
+//		if err != nil {
+//			return err
+//		}
+//		if cmdTag.RowsAffected() == 0 {
+//			return fmt.Errorf("no request found with id: %s", reqID)
+//		}
+//		return nil
+//	}
 func (r *Repository) ChangePassword(req *dto.ChangePasswordRequest) error {
 
 	query := sq.Update("users").
@@ -440,22 +438,22 @@ func (r *Repository) ChangeProfileInfo(req *dto.ChangeProfileRequest) error {
 	return nil
 }
 
-func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
-	query := sq.Select("full_name", "login", "role", "role_name").
-		From("users").
-		Where(sq.Eq{"id": userId}).
-		PlaceholderFormat(sq.Dollar)
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, err
-	}
-	var profile dto.UserProfile
-	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&profile.FullName, &profile.Login, &profile.Role, &profile.RoleName)
-	if err != nil {
-		return nil, err
-	}
-	return &profile, nil
-}
+// func (r *Repository) GetUserProfile(userId string) (*dto.UserProfile, error) {
+// 	query := sq.Select("full_name", "login", "role", "role_name").
+// 		From("users").
+// 		Where(sq.Eq{"id": userId}).
+// 		PlaceholderFormat(sq.Dollar)
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var profile dto.UserProfile
+// 	err = r.pg.QueryRow(context.Background(), sql, args...).Scan(&profile.FullName, &profile.Login, &profile.Role, &profile.RoleName)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &profile, nil
+// }
 
 func (r *Repository) NewNotPemamentApplicant(name string) (string, error) {
 
@@ -673,36 +671,36 @@ func (r *Repository) NotAcceptExternalUser(id int) error {
 	return nil
 }
 
-func (r *Repository) GetApplicants() ([]*dto.Applicant, error) {
-	query := sq.Select("name", "is_permanent").
-		From("applicants").
-		PlaceholderFormat(sq.Dollar)
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, err
-	}
-	rows, err := r.pg.Query(context.Background(), sql, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+// func (r *Repository) GetApplicants() ([]*dto.Applicant, error) {
+// 	query := sq.Select("name", "is_permanent").
+// 		From("applicants").
+// 		PlaceholderFormat(sq.Dollar)
+// 	sql, args, err := query.ToSql()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	rows, err := r.pg.Query(context.Background(), sql, args...)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
 
-	var applicants []*dto.Applicant
-	for rows.Next() {
-		var applicant dto.Applicant
-		err := rows.Scan(&applicant.Name, &applicant.IsPermanent)
-		if err != nil {
-			return nil, err
-		}
-		if applicant.IsPermanent {
-			applicants = append(applicants, &applicant)
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return applicants, nil
-}
+// 	var applicants []*dto.Applicant
+// 	for rows.Next() {
+// 		var applicant dto.Applicant
+// 		err := rows.Scan(&applicant.Name, &applicant.IsPermanent)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		if applicant.IsPermanent {
+// 			applicants = append(applicants, &applicant)
+// 		}
+// 	}
+// 	if err := rows.Err(); err != nil {
+// 		return nil, err
+// 	}
+// 	return applicants, nil
+// }
 
 func (r *Repository) GetTerrOtdels() ([]*dto.Source, error) {
 	query := sq.Select("id", "name").

@@ -1,10 +1,7 @@
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS request_sources;
-DROP TABLE IF EXISTS applicants;
-DROP TABLE IF EXISTS requests;
-DROP TABLE IF EXISTS request_logs;
-DROP TABLE IF EXISTS catch_acts;
-DROP TABLE IF EXISTS contractor_requests;
-DROP TABLE IF EXISTS contractor_request_items;
-DROP FUNCTION IF EXISTS assign_request_number;
-DROP TRIGGER IF EXISTS trg_assign_request_number ON requests;
+DROP TABLE IF EXISTS requests CASCADE;
+DROP TABLE IF EXISTS external_users CASCADE;
+DROP TABLE IF EXISTS applicants CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS ter_otdels CASCADE;
+DROP TABLE IF EXISTS districts CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;

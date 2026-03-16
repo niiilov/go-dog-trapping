@@ -5,6 +5,7 @@ from openpyxl.styles import Font, PatternFill, Border, Alignment, Protection
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -656,9 +657,17 @@ async def generate_insert_doc(req: RequestMultipleInsert):
 
         shared_dir = Path("/app/shared")
         if (shared_dir / filename).exists():
-            return JSONResponse({"status": "ok", "filename": filename}, status_code=200)
+            return Response(
+                content=(shared_dir / filename).read_bytes(),
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
+            )
         if Path(filename).exists():
-            return JSONResponse({"status": "ok", "filename": filename}, status_code=200)
+            return  Response(
+                content=(shared_dir / filename).read_bytes(),
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
+            )
 
         return JSONResponse({"error": "File not created"}, status_code=500)
     except Exception as e:

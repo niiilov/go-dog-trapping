@@ -19,16 +19,6 @@ type Account struct {
 	SourceID string `json:"source_id,omitempty"` // id тер отдела
 }
 
-// UserProfile model info
-// @Description Структура для получения профиля пользователя. Все поля обязательны к заполнению
-type UserProfile struct {
-	ID       string `json:"id"`        // ID пользователя
-	FullName string `json:"full_name"` //Полное имя или название организации
-	Login    string `json:"login"`     // Логин для входа в систему, должен быть уникальным
-	Role     string `json:"role"`      // Роль пользователя, например, "admin", "user", "otdel" и т.д.
-	RoleName string `json:"role_name"` // Название роли пользователя
-}
-
 // AuthCredentials model info
 // @Description Структура для авторизации пользователя. Все поля обязательны к заполнению
 type AuthCredentials struct {
@@ -90,11 +80,11 @@ type Source struct {
 
 // Applicant model info
 // @Description Заявитель. Поле name игнорируется при создании заявки.
-type Applicant struct {
-	ID          string `json:"id"`             //уникальный идентификатор заявителя при Post запросе на создание заявки ОБЯЗАТЕЛЕН
-	Name        string `json:"name,omitempty"` //Название заявителя игнорируется при создании заявки
-	IsPermanent bool   `json:"is_permanent"`   // Является ли заявитель постоянным
-}
+// type Applicant struct {
+// 	ID          string `json:"id"`             //уникальный идентификатор заявителя при Post запросе на создание заявки ОБЯЗАТЕЛЕН
+// 	Name        string `json:"name,omitempty"` //Название заявителя игнорируется при создании заявки
+// 	IsPermanent bool   `json:"is_permanent"`   // Является ли заявитель постоянным
+// }
 
 // RequestForGeneratingMultipleByDate model info
 // @Description генерация документа с несколькими заявками.
@@ -120,10 +110,10 @@ type Response struct {
 // Response model info
 // @Description  Структура для ответа с данными пользователя
 type AuthResponse struct {
-	Status  string      `json:"status"`  // обычно ok  при ошибках error
-	Message string      `json:"message"` // просто сообщение
-	User    UserProfile `json:"user"`    // данные пользователя
-	Tokens  AuthTokens  `json:"tokens"`  // токены авторизации
+	Status  string       `json:"status"`  // обычно ok  при ошибках error
+	Message string       `json:"message"` // просто сообщение
+	User    *UserProfile `json:"user"`    // данные пользователя
+	Tokens  *AuthTokens  `json:"tokens"`  // токены авторизации
 
 }
 
@@ -150,5 +140,3 @@ type DownloadActRequest struct {
 	Year   string `json:"year"`   // год заявки
 
 }
-
-

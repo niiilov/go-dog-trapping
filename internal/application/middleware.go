@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handlers) authMiddleware(c *gin.Context) {
-	if c.Request.URL.Path == "/api/auth/sign-up" || c.Request.URL.Path == "/api/auth/sign-in" || c.Request.URL.Path == "/api/auth/refresh" || c.Request.URL.Path == "/api/external/users" {
+	if c.Request.URL.Path == "/api/auth/register" || c.Request.URL.Path == "/api/auth/login" || c.Request.URL.Path == "/api/auth/refresh" || strings.Contains(c.Request.URL.Path, "external") {
 		c.Next()
 		return
 	}
@@ -38,10 +38,11 @@ func (h *Handlers) authMiddleware(c *gin.Context) {
 
 	c.Set("access_token", accessToken)
 
-	claims, role, sourceID, err := h.jwtService.DecodeKey(accessToken)
+	claims, roleID, districtID, terOtdelID, err := h.jwtService.DecodeKey(accessToken)
 
-	c.Set("role", role)
-	c.Set("source_id", sourceID)
+	c.Set("role", roleID)
+	c.Set("district_id", districtID)
+	c.Set("ter_otdel_id", terOtdelID)
 
 	if err != nil {
 		fmt.Println(err)

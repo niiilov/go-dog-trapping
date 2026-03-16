@@ -10,17 +10,17 @@ import (
 	"github.com/niiilov/go-dog-trapping/internal/dto"
 )
 
-// @Summary Sign In
+// @Summary Login
 // @Description Авторизация пользователя.
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param account body dto.AuthCredentials true "Account credentials"
+// @Param request body dto.AuthCredentials true "Login information"
 // @Success 200 {object} dto.AuthResponse
-// @Failure 400 {object} dto.AuthResponse	"Ошибка в данных запроса."
+// @Failure 400 {object} dto.AuthResponse
 // @Failure 500 {object} dto.AuthResponse
-// @Router /auth/sign-in [post]
-func (h *Handlers) singIn(c *gin.Context) {
+// @Router /api/auth/login [post]
+func (h *Handlers) Login(c *gin.Context) {
 
 	var cred dto.AuthCredentials
 	if err := c.Bind(&cred); err != nil {
@@ -32,50 +32,49 @@ func (h *Handlers) singIn(c *gin.Context) {
 		Password: cred.Password,
 	}
 
-	user, role, sourceID, err := h.service.ValidateAccount(reqStruct)
-	fmt.Println("ПОСЛЕ ВХОДА")
+	user, err := h.service.ValidateAccount(reqStruct)
+
 	if err != nil {
 		//логи
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
-
+	fmt.Println("ПОСЛЕ ВХОДА")
 	// Генерация токена
-	tokens, err := h.SetNewToken(c, user.ID, role, sourceID)
+	tokens, err := h.SetNewToken(c, user.ID, user.RoleID, user.DistrictID, user.TerOtdelID)
 	if err != nil {
 		//логи
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка генерации токена."})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "ok",
-		"message": "Успешный вход.",
-		"user":    user,
-		"tokens":  tokens,
+	c.JSON(http.StatusOK, dto.AuthResponse{
+		Status:  "ok",
+		Message: "Успешный вход.",
+		User:    user,
+		Tokens:  tokens,
 	})
 }
 
-// @Summary Sign Up
+// @Summary Register
 // @Description Регистрация нового пользователя.
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param account body dto.Account true "Account information"
-// @Success 200 {object} dto.AuthResponse
-// @Failure 400 {object} dto.AuthResponse	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.AuthResponse
-// @Router /auth/sign-up [post]
-func (h *Handlers) singUp(c *gin.Context) {
+// @Param request body dto.CreateUserDTO true "User information"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/auth/register [post]
+func (h *Handlers) Register(c *gin.Context) {
 
-	var reqStruct dto.Account
+	var reqStruct dto.CreateUserDTO
 	if err := c.Bind(&reqStruct); err != nil {
 		//логи
 		fmt.Println(err)
 	}
-
-	_, err := h.service.CreateAccount(&reqStruct)
+	err := h.service.CreateUser(&reqStruct)
 	fmt.Println(err)
 
 	if err != nil {
@@ -111,7 +110,7 @@ func (h *Handlers) Refresh(c *gin.Context) {
 		//логи
 	}
 
-	claims, role, sourceID, err := h.jwtService.DecodeKey(tokenStruct.RefreshToken)
+	claims, roleID, districtID, terOtdelID, err := h.jwtService.DecodeKey(tokenStruct.RefreshToken)
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
@@ -131,7 +130,7 @@ func (h *Handlers) Refresh(c *gin.Context) {
 		return
 	}
 
-	tokens, err := h.SetNewToken(c, id, role, sourceID)
+	tokens, err := h.SetNewToken(c, id, roleID, districtID, terOtdelID)
 	if err != nil {
 		//логиии
 		c.JSON(http.StatusInternalServerError, err)
@@ -156,110 +155,110 @@ func (h *Handlers) Refresh(c *gin.Context) {
 // @Success 200 {object} dto.Response  	 "Пароль успешно изменен."
 // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
 // @Failure 500 {object} dto.Response	"Ошибка при cмене  пароля."
-// @Router /auth/change-password [post]
-func (h *Handlers) ChangePassword(c *gin.Context) {
-	var reqStruct dto.ChangePasswordRequest
-	if err := c.Bind(&reqStruct); err != nil {
-		//логи
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
+// // @Router /auth/change-password [post]
+// func (h *Handlers) ChangePassword(c *gin.Context) {
+// 	var reqStruct dto.ChangePasswordRequest
+// 	if err := c.Bind(&reqStruct); err != nil {
+// 		//логи
+// 		fmt.Println(err)
+// 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+// 		return
+// 	}
 
-	err := h.service.ChangePassword(&reqStruct)
-	if err != nil {
-		// опять логи
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при смене пароля."})
-		return
-	}
+// 	err := h.service.ChangePassword(&reqStruct)
+// 	if err != nil {
+// 		// опять логи
+// 		fmt.Println(err)
+// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при смене пароля."})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Пароль успешно изменен."})
+// 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Пароль успешно изменен."})
 
-}
+// }
 
-// @Summary Change Profile Info
-// @Description Смена данных профлия пользователя.
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param request body dto.ChangeProfileRequest true "Change Profile information"
-// @Security BearerAuth
-// @Success 200 {object} dto.Response  	 "Информация успешна изменена."
-// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при cмене  данных."
-// @Router /auth/change-password [post]
-func (h *Handlers) ChangeProfileInfo(c *gin.Context) {
-	var reqStruct dto.ChangeProfileRequest
+// // @Summary Change Profile Info
+// // @Description Смена данных профлия пользователя.
+// // @Tags User
+// // @Accept json
+// // @Produce json
+// // @Param request body dto.ChangeProfileRequest true "Change Profile information"
+// // @Security BearerAuth
+// // @Success 200 {object} dto.Response  	 "Информация успешна изменена."
+// // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
+// // @Failure 500 {object} dto.Response	"Ошибка при cмене  данных."
+// // @Router /auth/change-password [post]
+// func (h *Handlers) ChangeProfileInfo(c *gin.Context) {
+// 	var reqStruct dto.ChangeProfileRequest
 
-	if err := c.Bind(&reqStruct); err != nil {
-		//логи
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-		return
-	}
-	err := h.service.ChangeProfileInfo(&reqStruct)
-	if err != nil {
-		// опять логи
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при изменение информации."})
-		return
-	}
+// 	if err := c.Bind(&reqStruct); err != nil {
+// 		//логи
+// 		fmt.Println(err)
+// 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
+// 		return
+// 	}
+// 	err := h.service.ChangeProfileInfo(&reqStruct)
+// 	if err != nil {
+// 		// опять логи
+// 		fmt.Println(err)
+// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при изменение информации."})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Информация успешно изменена."})
+// 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Информация успешно изменена."})
 
-}
+// }
 
-// @Summary Get User Profile
-// @Description Получение профиля пользователя.
-// @Tags User
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} dto.UserProfile
-// @Failure 401 {object} dto.Response
-// @Failure 500 {object} dto.Response
-// @Router /user/profile [get]
-func (h *Handlers) Profile(c *gin.Context) {
+// // @Summary Get User Profile
+// // @Description Получение профиля пользователя.
+// // @Tags User
+// // @Produce json
+// // @Security BearerAuth
+// // @Success 200 {object} dto.UserProfile
+// // @Failure 401 {object} dto.Response
+// // @Failure 500 {object} dto.Response
+// // @Router /user/profile [get]
+// func (h *Handlers) Profile(c *gin.Context) {
 
-	token := c.Value("access_token").(string)
-	claims, _, _, err := h.jwtService.DecodeKey(token)
+// 	token := c.Value("access_token").(string)
+// 	claims, _, _, err := h.jwtService.DecodeKey(token)
 
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
-		c.Abort()
-		return
-	}
-	if claims.ExpiresAt.Time.Before(time.Now()) {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Токен обновления истек."})
-		c.Abort()
-		return
-	}
+// 	if err != nil {
+// 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
+// 		c.Abort()
+// 		return
+// 	}
+// 	if claims.ExpiresAt.Time.Before(time.Now()) {
+// 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Токен обновления истек."})
+// 		c.Abort()
+// 		return
+// 	}
 
-	userId, err := claims.GetSubject()
+// 	userId, err := claims.GetSubject()
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "ошибка."})
-		c.Abort()
-		return
-	}
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "ошибка."})
+// 		c.Abort()
+// 		return
+// 	}
 
-	profile, err := h.service.GetUserProfile(userId)
-	if err != nil {
-		// опять логи
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении профиля."})
-		return
-	}
-	profile.ID = userId
+// 	profile, err := h.service.GetUserProfile(userId)
+// 	if err != nil {
+// 		// опять логи
+// 		fmt.Println(err)
+// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении профиля."})
+// 		return
+// 	}
+// 	profile.ID = userId
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
-}
+// 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
+// }
 
-func (h *Handlers) SetNewToken(c *gin.Context, id string, role_id string, sourceID string) (*dto.AuthTokens, error) {
+func (h *Handlers) SetNewToken(c *gin.Context, id string, role_id string, district_id string, ter_otdel_id string) (*dto.AuthTokens, error) {
 
-	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix(), "role": role_id, "source_id": sourceID}
+	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix(), "role": role_id, "district_id": district_id, "ter_otdel_id": ter_otdel_id}
 
-	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix(), "role": role_id, "source_id": sourceID}
+	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix(), "role": role_id, "district_id": district_id, "ter_otdel_id": ter_otdel_id}
 
 	var tokens dto.AuthTokens
 

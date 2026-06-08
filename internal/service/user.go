@@ -6,7 +6,13 @@ import (
 	validate "github.com/niiilov/go-dog-trapping/pkg/validator"
 )
 
+const defaultRoleID = "e57ef349-176a-4b06-9116-fb12c0e21f58" // ter_otdel
+
 func (r *Service) CreateUser(user *dto.CreateUserDTO) error {
+	if user.RoleID == "" {
+		user.RoleID = defaultRoleID
+	}
+
 	passwordHash, err := security.Encode(user.Password)
 	if err != nil {
 		return err

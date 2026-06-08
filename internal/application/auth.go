@@ -73,7 +73,7 @@ func (h *Handlers) Register(c *gin.Context) {
 	fmt.Println(err)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": err})
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
 

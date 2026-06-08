@@ -5,20 +5,16 @@ CREATE TABLE roles (
     type_role  VARCHAR(100) NOT NULL
 );
 
--- districts
+-- districts (kept for requests reference)
 CREATE TABLE districts (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name       VARCHAR(255) NOT NULL
 );
 
-
 CREATE TABLE ter_otdels (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name        VARCHAR(255) NOT NULL,
-    district_id UUID NOT NULL REFERENCES districts(id) ON DELETE RESTRICT
+    id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL
 );
-
-CREATE INDEX idx_ter_otdels_district_id ON ter_otdels(district_id);
 
 -- users
 CREATE TABLE users (
@@ -27,25 +23,21 @@ CREATE TABLE users (
     login         VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role_id       UUID NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
-    district_id   UUID NOT NULL REFERENCES districts(id) ON DELETE RESTRICT,
     ter_otdel_id  UUID REFERENCES ter_otdels(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_users_role_id      ON users(role_id);
-CREATE INDEX idx_users_district_id  ON users(district_id);
 CREATE INDEX idx_users_ter_otdel_id ON users(ter_otdel_id);
 
-
-
 CREATE TABLE applicants (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    full_name     VARCHAR(255) NOT NULL,
-    position      VARCHAR(255) NOT NULL,
-    district_id   UUID NOT NULL REFERENCES districts(id) ON DELETE SET NULL,
-    base          BOOLEAN NOT NULL DEFAULT FALSE
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    full_name    VARCHAR(255) NOT NULL,
+    position     VARCHAR(255) NOT NULL,
+    ter_otdel_id UUID REFERENCES ter_otdels(id) ON DELETE SET NULL,
+    base         BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE INDEX idx_applicants_district_id ON applicants(district_id);
+CREATE INDEX idx_applicants_ter_otdel_id ON applicants(ter_otdel_id);
 
 -- external_users
 CREATE TABLE external_users (

@@ -9,8 +9,8 @@ import (
 
 func (r *Repository) CreateTerOtdel(terOtdel *dto.CreateTerOtdelDTO) (string, error) {
 	query := sq.Insert("ter_otdels").
-		Columns("name", "district_id").
-		Values(terOtdel.Name, terOtdel.DistrictID).
+		Columns("name").
+		Values(terOtdel.Name).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar)
 
@@ -29,7 +29,7 @@ func (r *Repository) CreateTerOtdel(terOtdel *dto.CreateTerOtdelDTO) (string, er
 }
 
 func (r *Repository) GetTerOtdels() ([]*dto.TerOtdel, error) {
-	query := sq.Select("id", "name", "district_id").
+	query := sq.Select("id", "name").
 		From("ter_otdels").
 		PlaceholderFormat(sq.Dollar)
 
@@ -47,34 +47,7 @@ func (r *Repository) GetTerOtdels() ([]*dto.TerOtdel, error) {
 	var terOtdels []*dto.TerOtdel
 	for rows.Next() {
 		var terOtdel dto.TerOtdel
-		if err := rows.Scan(&terOtdel.ID, &terOtdel.Name, &terOtdel.DistrictID); err != nil {
-			return nil, err
-		}
-		terOtdels = append(terOtdels, &terOtdel)
-	}
-
-	return terOtdels, nil
-}
-
-func (r *Repository) GetTerrOtdelsByDistrictID(district_id string) ([]*dto.TerOtdel, error) {
-	query := sq.Select("id", "name", "district_id").
-		From("ter_otdels").
-		Where(sq.Eq{"district_id": district_id}).
-		PlaceholderFormat(sq.Dollar)
-
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := r.pg.Query(context.Background(), sql, args...)
-	if err != nil {
-		return nil, err
-	}
-	var terOtdels []*dto.TerOtdel
-	for rows.Next() {
-		var terOtdel dto.TerOtdel
-		if err := rows.Scan(&terOtdel.ID, &terOtdel.Name, &terOtdel.DistrictID); err != nil {
+		if err := rows.Scan(&terOtdel.ID, &terOtdel.Name); err != nil {
 			return nil, err
 		}
 		terOtdels = append(terOtdels, &terOtdel)

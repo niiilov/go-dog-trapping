@@ -7,7 +7,6 @@ import (
 )
 
 func (r *Service) CreateUser(user *dto.CreateUserDTO) error {
-
 	passwordHash, err := security.Encode(user.Password)
 	if err != nil {
 		return err
@@ -33,7 +32,6 @@ func (s *Service) GetUsers() ([]*dto.GetUserDTO, error) {
 			FullName:   user.FullName,
 			Login:      user.Login,
 			RoleID:     user.RoleID,
-			DistrictID: user.DistrictID,
 			TerOtdelID: user.TerOtdelID,
 		})
 	}
@@ -45,10 +43,8 @@ func (s *Service) DeleteUser(userID string) error {
 }
 
 func (s *Service) ValidateAccount(account *dto.AuthCredentials) (*dto.UserProfile, error) {
-
 	err := validate.Validate(account)
 	if err != nil {
-
 		return nil, ErrInvalidData
 	}
 

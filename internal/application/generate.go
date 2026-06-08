@@ -24,9 +24,18 @@ func (h *Handlers) Generate(c *gin.Context) {
 		return
 	}
 
-	districtID := c.GetString("district_id")
+	roleID := c.GetString("role")
+	terOtdelID := c.GetString("ter_otdel_id")
 
-	requests, err := h.service.GetRequestsByDistrictIDs(districtID, req.RequestsID)
+	var requests []*dto.GetRequestsDTO
+	var err error
+
+	if roleID == dto.RoleRegionalAdmin {
+		requests, err = h.service.GetRequestsByIDs(req.RequestsID)
+	} else {
+		requests, err = h.service.GetRequestsByTerOtdelIDs(terOtdelID, req.RequestsID)
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении заявок."})
 		return

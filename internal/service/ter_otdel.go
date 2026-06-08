@@ -17,10 +17,6 @@ func (s *Service) GetTerOtdels() ([]*dto.TerOtdel, error) {
 	return s.repository.GetTerOtdels()
 }
 
-func (s *Service) GetTerrOtdelsByDistrictID(district_id string) ([]*dto.TerOtdel, error) {
-	return s.repository.GetTerrOtdelsByDistrictID(district_id)
-}
-
 func (s *Service) DeleteTerOtdel(id string) error {
 	return s.repository.DeleteTerOtdel(id)
 }

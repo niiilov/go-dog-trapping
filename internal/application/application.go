@@ -14,24 +14,11 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	// router.Use(cors.Default())
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173", "http://127.0.0.1:5173"},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders: []string{
-			"Origin",
-			"Content-Type",
-			"Accept",
-			"Authorization", // Явно указываем Authorization
-			"X-Requested-With",
-			"Access-Control-Allow-Origin",
-		},
-		ExposeHeaders: []string{
-			"Content-Length",
-			"Access-Control-Allow-Origin",
-			"Access-Control-Allow-Headers",
-			"Content-Type",
-			"Authorization",
-		},
-		AllowCredentials: true,
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials: false,
 		MaxAge:           12 * time.Hour,
 	}))
 
@@ -53,11 +40,7 @@ func InitRouter(handlers *Handlers) *gin.Engine {
 	router.GET("/api/ter-otdel", handlers.GetTerOtdels)
 	router.DELETE("/api/ter-otdel/:id", handlers.DeleteTerOtdel)
 
-	router.POST("/api/districts", handlers.CreateDistrict)
-	router.GET("/api/districts", handlers.GetDistricts)
-	router.DELETE("/api/districts/:id", handlers.DeleteDistrict)
-
-	router.GET("/api/applicants/:districtID", handlers.GetApplicantByDistrictID)
+	router.GET("/api/applicants/:terOtdelID", handlers.GetApplicantByTerOtdelID)
 	router.POST("/api/applicants", handlers.CreateApplicant)
 
 	router.GET("/api/requests", handlers.GetRequests)

@@ -55,22 +55,18 @@ type repository interface {
 	GetUserByLogin(login string) (*dto.User, error)
 	GetUserProfile(userId string) (*dto.UserProfile, error)
 
-	CreateDistrict(district *dto.District) error
-	GetDistricts() ([]*dto.District, error)
-	DeleteDistrict(id string) error
-
 	CreateTerOtdel(terOtdel *dto.CreateTerOtdelDTO) (string, error)
 	GetTerOtdels() ([]*dto.TerOtdel, error)
-	GetTerrOtdelsByDistrictID(district_id string) ([]*dto.TerOtdel, error)
 	DeleteTerOtdel(id string) error
 
 	CreateApplicant(applicant *dto.CreateApplicantDTO) error
-	GetApplicantByDistrictID(districtID string) ([]*dto.Applicant, error)
+	GetApplicantByTerOtdelID(terOtdelID string) ([]*dto.Applicant, error)
 
 	CreateRequest(request *dto.CreateRequestDTO) error
+	GetAllRequests() ([]*dto.GetRequestsDTO, error)
 	GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error)
-	GetRequestsByDistrictID(id string) ([]*dto.GetRequestsDTO, error)
-	GetRequestsByDistrictIDs(district_id string, ids []string) ([]*dto.GetRequestsDTO, error)
+	GetRequestsByIDs(ids []string) ([]*dto.GetRequestsDTO, error)
+	GetRequestsByTerOtdelIDs(terOtdelID string, ids []string) ([]*dto.GetRequestsDTO, error)
 	ChangeStatusRequest(req *dto.ChangeStatusRequestDTO) error
 	DeleteRequest(id string) error
 	AddActFile(reqID string, actFile string) error

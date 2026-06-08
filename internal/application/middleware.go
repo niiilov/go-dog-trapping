@@ -20,6 +20,7 @@ func (h *Handlers) authMiddleware(c *gin.Context) {
 		return
 	}
 
+
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
@@ -38,10 +39,9 @@ func (h *Handlers) authMiddleware(c *gin.Context) {
 
 	c.Set("access_token", accessToken)
 
-	claims, roleID, districtID, terOtdelID, err := h.jwtService.DecodeKey(accessToken)
+	claims, roleID, terOtdelID, err := h.jwtService.DecodeKey(accessToken)
 
 	c.Set("role", roleID)
-	c.Set("district_id", districtID)
 	c.Set("ter_otdel_id", terOtdelID)
 
 	if err != nil {

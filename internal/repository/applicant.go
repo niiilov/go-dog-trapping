@@ -8,10 +8,8 @@ import (
 )
 
 func (r *Repository) CreateApplicant(applicant *dto.CreateApplicantDTO) error {
-	// Implementation for creating an applicant in the database
-
-	query := sq.Insert("applicants").Columns("full_name", "position", "district_id").
-		Values(applicant.FullName, applicant.Position, applicant.DistrictID).
+	query := sq.Insert("applicants").Columns("full_name", "position", "ter_otdel_id").
+		Values(applicant.FullName, applicant.Position, applicant.TerOtdelID).
 		PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := query.ToSql()
@@ -23,10 +21,10 @@ func (r *Repository) CreateApplicant(applicant *dto.CreateApplicantDTO) error {
 	return err
 }
 
-func (r *Repository) GetApplicantByDistrictID(districtID string) ([]*dto.Applicant, error) {
-	query := sq.Select("id", "full_name", "position", "district_id").
+func (r *Repository) GetApplicantByTerOtdelID(terOtdelID string) ([]*dto.Applicant, error) {
+	query := sq.Select("id", "full_name", "position", "ter_otdel_id").
 		From("applicants").
-		Where(sq.Eq{"district_id": districtID}).
+		Where(sq.Eq{"ter_otdel_id": terOtdelID}).
 		PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := query.ToSql()
@@ -39,14 +37,14 @@ func (r *Repository) GetApplicantByDistrictID(districtID string) ([]*dto.Applica
 	}
 	defer rows.Close()
 
-	var applicant []*dto.Applicant
+	var applicants []*dto.Applicant
 	for rows.Next() {
 		var a dto.Applicant
-		if err := rows.Scan(&a.ID, &a.FullName, &a.Position, &a.DistrictID); err != nil {
+		if err := rows.Scan(&a.ID, &a.FullName, &a.Position, &a.TerOtdelID); err != nil {
 			return nil, err
 		}
-		applicant = append(applicant, &a)
+		applicants = append(applicants, &a)
 	}
 
-	return applicant, nil
+	return applicants, nil
 }

@@ -13,7 +13,7 @@ import (
 // @Produce json
 // @Param terOtdel body dto.CreateTerOtdelDTO true "TerOtdel"
 // @Success 201 {object}  map[string]interface{}
-// @Failure 400 {object} map[strring]interface{}
+// @Failure 400 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /api/ter-otdel [post]
 func (h *Handlers) CreateTerOtdel(c *gin.Context) {
@@ -36,34 +36,15 @@ func (h *Handlers) CreateTerOtdel(c *gin.Context) {
 // @Description Get all TerOtdels
 // @Produce json
 // @Success 200 {object} []dto.TerOtdel
-// @Failure 403 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /api/ter-otdel [get]
 func (h *Handlers) GetTerOtdels(c *gin.Context) {
-	role := c.Value("role").(string)
-
-	switch role {
-	case dto.RoleRegionalAdmin:
-		terOtdels, err := h.service.GetTerOtdels()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, terOtdels)
-	case dto.RoleDistrictAdmin:
-		// District admins can see their own TerOtdels
-		districtID := c.Value("district_id").(string)
-		terOtdels, err := h.service.GetTerrOtdelsByDistrictID(districtID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, terOtdels)
-
-	default:
-		c.JSON(http.StatusForbidden, gin.H{"error": "Доступ запрещен."})
+	terOtdels, err := h.service.GetTerOtdels()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-
+	c.JSON(http.StatusOK, terOtdels)
 }
 
 // @Summary Delete a TerOtdel

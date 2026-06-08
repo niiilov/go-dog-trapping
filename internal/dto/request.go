@@ -4,7 +4,6 @@ import "time"
 
 type Request struct {
 	ID            string    `json:"id"`
-	DistrictID    string    `json:"district_id"`
 	TerOtdelID    string    `json:"ter_otdel_id"`
 	ApplicantID   string    `json:"applicant_id"`
 	Address       string    `json:"address"`
@@ -19,8 +18,6 @@ type Request struct {
 }
 type GetRequestsDTO struct {
 	ID                string    `json:"id"`
-	DistrictID        string    `json:"district_id"`
-	DistrictName      string    `json:"district_name"`
 	TerOtdelID        string    `json:"ter_otdel_id"`
 	TerOtdelName      string    `json:"ter_otdel_name"`
 	ApplicantID       string    `json:"applicant_id"`
@@ -38,7 +35,6 @@ type GetRequestsDTO struct {
 }
 
 type CreateRequestDTO struct {
-	DistrictID    string `json:"district_id"`
 	TerOtdelID    string `json:"ter_otdel_id"`
 	ApplicantID   string `json:"applicant_id"`
 	Address       string `json:"address"`
@@ -50,6 +46,6 @@ type CreateRequestDTO struct {
 }
 
 type ChangeStatusRequestDTO struct {
-	ID     string `json:"id"`     // ID заявки
-	Status string `json:"status"` // Новый статус заявки (новая, в работе, выполнена, отменена)
+	ID     string `json:"id"`
+	Status string `json:"status"`
 }

@@ -2,8 +2,8 @@ package service
 
 import "github.com/niiilov/go-dog-trapping/internal/dto"
 
-func (s *Service) GetApplicantByDistrictID(districtID string) ([]*dto.Applicant, error) {
-	applicants, err := s.repository.GetApplicantByDistrictID(districtID)
+func (s *Service) GetApplicantByTerOtdelID(terOtdelID string) ([]*dto.Applicant, error) {
+	applicants, err := s.repository.GetApplicantByTerOtdelID(terOtdelID)
 	if err != nil {
 		return nil, err
 	}

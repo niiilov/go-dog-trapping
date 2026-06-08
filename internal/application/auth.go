@@ -24,7 +24,6 @@ func (h *Handlers) Login(c *gin.Context) {
 
 	var cred dto.AuthCredentials
 	if err := c.Bind(&cred); err != nil {
-		//логи
 		fmt.Println(err)
 	}
 	reqStruct := &dto.AuthCredentials{
@@ -35,16 +34,13 @@ func (h *Handlers) Login(c *gin.Context) {
 	user, err := h.service.ValidateAccount(reqStruct)
 
 	if err != nil {
-		//логи
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
 		return
 	}
-	fmt.Println("ПОСЛЕ ВХОДА")
-	// Генерация токена
-	tokens, err := h.SetNewToken(c, user.ID, user.RoleID, user.DistrictID, user.TerOtdelID)
+
+	tokens, err := h.SetNewToken(c, user.ID, user.RoleID, user.TerOtdelID)
 	if err != nil {
-		//логи
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка генерации токена."})
 		return
 	}
@@ -71,15 +67,12 @@ func (h *Handlers) Register(c *gin.Context) {
 
 	var reqStruct dto.CreateUserDTO
 	if err := c.Bind(&reqStruct); err != nil {
-		//логи
 		fmt.Println(err)
 	}
 	err := h.service.CreateUser(&reqStruct)
 	fmt.Println(err)
 
 	if err != nil {
-		// опять логи
-
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": err})
 		return
 	}
@@ -107,10 +100,9 @@ func (h *Handlers) Refresh(c *gin.Context) {
 	if err := c.Bind(&tokenStruct); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		c.Abort()
-		//логи
 	}
 
-	claims, roleID, districtID, terOtdelID, err := h.jwtService.DecodeKey(tokenStruct.RefreshToken)
+	claims, roleID, terOtdelID, err := h.jwtService.DecodeKey(tokenStruct.RefreshToken)
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
@@ -130,9 +122,8 @@ func (h *Handlers) Refresh(c *gin.Context) {
 		return
 	}
 
-	tokens, err := h.SetNewToken(c, id, roleID, districtID, terOtdelID)
+	tokens, err := h.SetNewToken(c, id, roleID, terOtdelID)
 	if err != nil {
-		//логиии
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
@@ -145,134 +136,22 @@ func (h *Handlers) Refresh(c *gin.Context) {
 
 }
 
-// @Summary Change Password
-// @Description Смена пароля пользователя.
-// @Tags User
-// @Accept json
-// @Produce json
-// @Param request body dto.ChangePasswordRequest true "Change Password information"
-// @Security BearerAuth
-// @Success 200 {object} dto.Response  	 "Пароль успешно изменен."
-// @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
-// @Failure 500 {object} dto.Response	"Ошибка при cмене  пароля."
-// // @Router /auth/change-password [post]
-// func (h *Handlers) ChangePassword(c *gin.Context) {
-// 	var reqStruct dto.ChangePasswordRequest
-// 	if err := c.Bind(&reqStruct); err != nil {
-// 		//логи
-// 		fmt.Println(err)
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-// 		return
-// 	}
+func (h *Handlers) SetNewToken(c *gin.Context, id string, role_id string, ter_otdel_id string) (*dto.AuthTokens, error) {
 
-// 	err := h.service.ChangePassword(&reqStruct)
-// 	if err != nil {
-// 		// опять логи
-// 		fmt.Println(err)
-// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при смене пароля."})
-// 		return
-// 	}
+	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix(), "role": role_id, "ter_otdel_id": ter_otdel_id}
 
-// 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Пароль успешно изменен."})
-
-// }
-
-// // @Summary Change Profile Info
-// // @Description Смена данных профлия пользователя.
-// // @Tags User
-// // @Accept json
-// // @Produce json
-// // @Param request body dto.ChangeProfileRequest true "Change Profile information"
-// // @Security BearerAuth
-// // @Success 200 {object} dto.Response  	 "Информация успешна изменена."
-// // @Failure 400 {object} dto.Response	"Ошибка в данных запроса."
-// // @Failure 500 {object} dto.Response	"Ошибка при cмене  данных."
-// // @Router /auth/change-password [post]
-// func (h *Handlers) ChangeProfileInfo(c *gin.Context) {
-// 	var reqStruct dto.ChangeProfileRequest
-
-// 	if err := c.Bind(&reqStruct); err != nil {
-// 		//логи
-// 		fmt.Println(err)
-// 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Ошибка в данных запроса."})
-// 		return
-// 	}
-// 	err := h.service.ChangeProfileInfo(&reqStruct)
-// 	if err != nil {
-// 		// опять логи
-// 		fmt.Println(err)
-// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при изменение информации."})
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "Информация успешно изменена."})
-
-// }
-
-// // @Summary Get User Profile
-// // @Description Получение профиля пользователя.
-// // @Tags User
-// // @Produce json
-// // @Security BearerAuth
-// // @Success 200 {object} dto.UserProfile
-// // @Failure 401 {object} dto.Response
-// // @Failure 500 {object} dto.Response
-// // @Router /user/profile [get]
-// func (h *Handlers) Profile(c *gin.Context) {
-
-// 	token := c.Value("access_token").(string)
-// 	claims, _, _, err := h.jwtService.DecodeKey(token)
-
-// 	if err != nil {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Необходима авторизация."})
-// 		c.Abort()
-// 		return
-// 	}
-// 	if claims.ExpiresAt.Time.Before(time.Now()) {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "message": "Токен обновления истек."})
-// 		c.Abort()
-// 		return
-// 	}
-
-// 	userId, err := claims.GetSubject()
-
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "ошибка."})
-// 		c.Abort()
-// 		return
-// 	}
-
-// 	profile, err := h.service.GetUserProfile(userId)
-// 	if err != nil {
-// 		// опять логи
-// 		fmt.Println(err)
-// 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "message": "Ошибка при получении профиля."})
-// 		return
-// 	}
-// 	profile.ID = userId
-
-// 	c.JSON(http.StatusOK, gin.H{"status": "ok", "data": profile})
-// }
-
-func (h *Handlers) SetNewToken(c *gin.Context, id string, role_id string, district_id string, ter_otdel_id string) (*dto.AuthTokens, error) {
-
-	newAccesClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.AccesTimeExpr).Unix(), "role": role_id, "district_id": district_id, "ter_otdel_id": ter_otdel_id}
-
-	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix(), "role": role_id, "district_id": district_id, "ter_otdel_id": ter_otdel_id}
+	newRefreshClaims := jwt.MapClaims{"sub": id, "exp": time.Now().Add(dto.RefreshTimeExpr).Unix(), "role": role_id, "ter_otdel_id": ter_otdel_id}
 
 	var tokens dto.AuthTokens
 
 	access, err := h.jwtService.Encode(newAccesClaims)
 	if err != nil {
-		// логи
-
 		return nil, err
 	}
 	tokens.AccesToken = access
 
 	tokens.RefreshToken, err = h.jwtService.Encode(newRefreshClaims)
 	if err != nil {
-		// логи
 		return nil, err
 	}
 

@@ -1,46 +1,88 @@
 services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-sobaki
+    environment:
+      POSTGRES_DB: sobaki
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "1234"
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/000001_init.up.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./migrations/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d sobaki"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   app:
     container_name: sobaki
-    env_file:
-      - .env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_USER: admin
+      PG_PASS: "1234"
+      PG_DATABASE: sobaki
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_BASE_ENDPOINT: ${AWS_BASE_ENDPOINT}
     ports:
       - "8091:8091"
     networks:
       - backend
-      
     volumes:
       - shared-data:/app/shared
     restart: on-failure
-    deploy:
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        delay: 5s
+    depends_on:
+      postgres:
+        condition: service_healthy
     build:
       context: .
       dockerfile: Dockerfile
 
+  frontend:
+    container_name: frontend-sobaki
+    build:
+      context: ../Submitting_applications_for_catch
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - backend
+    depends_on:
+      - app
+    restart: unless-stopped
+
   worker:
     container_name: worker-sobaki
-
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "8001:8001"
     networks:
       - backend
     volumes:
       - shared-data:/app/shared
-
     restart: on-failure
-    deploy:
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        delay: 5s
+    depends_on:
+      - app
     build:
       context: pkg/zalupa
       dockerfile: Dockerfile
 
 volumes:
+  postgres_data:
   shared-data:
 
 networks:

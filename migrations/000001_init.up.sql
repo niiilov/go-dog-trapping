@@ -11,7 +11,7 @@ CREATE TABLE districts (
     name       VARCHAR(255) NOT NULL
 );
 
--- ter_otdels
+
 CREATE TABLE ter_otdels (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name        VARCHAR(255) NOT NULL,
@@ -35,7 +35,8 @@ CREATE INDEX idx_users_role_id      ON users(role_id);
 CREATE INDEX idx_users_district_id  ON users(district_id);
 CREATE INDEX idx_users_ter_otdel_id ON users(ter_otdel_id);
 
--- applicants
+
+
 CREATE TABLE applicants (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name     VARCHAR(255) NOT NULL,

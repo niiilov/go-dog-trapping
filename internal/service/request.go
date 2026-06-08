@@ -19,8 +19,16 @@ func (s *Service) CreateRequest(request *dto.CreateRequestDTO) error {
 	return s.repository.CreateRequest(request)
 }
 
-func (s *Service) GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error) {
+func (s *Service) GetAllRequests() ([]*dto.GetRequestsDTO, error) {
+	requests, err := s.repository.GetAllRequests()
+	if err != nil {
+		return nil, err
+	}
+	s.validateDelay(requests)
+	return requests, nil
+}
 
+func (s *Service) GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error) {
 	requests, err := s.repository.GetRequestsByTerOtdel(id)
 	if err != nil {
 		return nil, err
@@ -29,12 +37,12 @@ func (s *Service) GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error
 	return requests, nil
 }
 
-func (s *Service) GetRequestsByDistrictID(id string) ([]*dto.GetRequestsDTO, error) {
-	return s.repository.GetRequestsByDistrictID(id)
+func (s *Service) GetRequestsByIDs(ids []string) ([]*dto.GetRequestsDTO, error) {
+	return s.repository.GetRequestsByIDs(ids)
 }
 
-func (s *Service) GetRequestsByDistrictIDs(district_id string, ids []string) ([]*dto.GetRequestsDTO, error) {
-	return s.repository.GetRequestsByDistrictIDs(district_id, ids)
+func (s *Service) GetRequestsByTerOtdelIDs(terOtdelID string, ids []string) ([]*dto.GetRequestsDTO, error) {
+	return s.repository.GetRequestsByTerOtdelIDs(terOtdelID, ids)
 }
 
 func (s *Service) ChangeStatusRequest(req *dto.ChangeStatusRequestDTO) error {
@@ -47,7 +55,6 @@ func (s *Service) DeleteRequest(id string) error {
 
 func (s *Service) AddActFile(reqID string, actFilename, actFilePath string) error {
 	if err := s.storage.UploadFile(context.TODO(), actFilename, actFilePath); err != nil {
-		//лог
 		fmt.Println("Error upload file to S3:", err)
 		return err
 	}
@@ -72,21 +79,17 @@ func (s *Service) validateDelay(requests []*dto.GetRequestsDTO) error {
 		if req.Status == "Завершена" || req.Status == "Просрочена" {
 			continue
 		}
-		// если прошло больше двух недель с момента создания — меняем статус
 		if time.Since(req.CreatedAt) > twoWeeks {
-
 			statusReq := &dto.ChangeStatusRequestDTO{
 				ID:     req.ID,
-				Status: "Просрочена", // <-- поменяйте на нужный вам статус
+				Status: "Просрочена",
 			}
 
 			if err := s.repository.ChangeStatusRequest(statusReq); err != nil {
 				fmt.Println("failed to change status for request", req.ID, ":", err)
-				// продолжаем обработку остальных заявок
 			}
 		}
 	}
 
 	return nil
-
 }

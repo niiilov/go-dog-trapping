@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,7 +10,7 @@ import (
 
 // @Summary Get Requests
 // @Security BearerAuth
-// @Description Получение заявок на отлов бродячих собак по ID территориального отдела или района.
+// @Description Получение заявок на отлов бродячих собак по ID территориального отдела.
 // @Tags Requests
 // @Produce json
 // @Success 200 {object} []dto.Request	"Список заявок"
@@ -17,29 +18,64 @@ import (
 // @Failure 500 {object} dto.Response	"Ошибка при получении заявок."
 // @Router /api/requests [get]
 func (h *Handlers) GetRequests(c *gin.Context) {
-	districtID := c.GetString("district_id")
+	roleID := c.GetString("role")
 	terOtdelID := c.GetString("ter_otdel_id")
 
-	if terOtdelID == "" {
-		requests, err := h.service.GetRequestsByDistrictID(districtID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, requests)
-		return
+	var requests []*dto.GetRequestsDTO
+	var err error
+
+	if roleID == dto.RoleRegionalAdmin {
+		requests, err = h.service.GetAllRequests()
+	} else {
+		requests, err = h.service.GetRequestsByTerOtdel(terOtdelID)
 	}
-	requests, err := h.service.GetRequestsByTerOtdel(terOtdelID)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, requests)
 
+	type nestedRef struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+	type requestResponse struct {
+		ID            string    `json:"id"`
+		Number        string    `json:"number"`
+		Address       string    `json:"address"`
+		DogsCount     int       `json:"dogs_count"`
+		Behavior      string    `json:"behavior"`
+		Urgency       string    `json:"urgency"`
+		ContactPerson string    `json:"contact_person"`
+		Status        string    `json:"status"`
+		CreatedAt     string    `json:"created_at"`
+		ActFile       string    `json:"act_file,omitempty"`
+		Applicant     nestedRef `json:"applicant"`
+		Source        nestedRef `json:"source"`
+	}
+
+	var response []requestResponse
+	for _, r := range requests {
+		response = append(response, requestResponse{
+			ID:            r.ID,
+			Number:        fmt.Sprintf("%d", r.Number),
+			Address:       r.Address,
+			DogsCount:     r.DogsCount,
+			Behavior:      r.Behavior,
+			Urgency:       r.Urgency,
+			ContactPerson: r.ContactPerson,
+			Status:        r.Status,
+			CreatedAt:     r.CreatedAt.Format("2006-01-02T15:04:05Z"),
+			ActFile:       r.ActFile,
+			Applicant:     nestedRef{ID: r.ApplicantID, Name: r.ApplicantName},
+			Source:        nestedRef{ID: r.TerOtdelID, Name: r.TerOtdelName},
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // @Summary Create Request
-// @Security BearerAuth
 // @Description Создание заявки на отлов бродячих собак.
 // @Tags Requests
 // @Accept json

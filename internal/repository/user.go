@@ -2,26 +2,15 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/niiilov/go-dog-trapping/internal/dto"
 )
 
 func (r *Repository) CreateUser(user *dto.CreateUserDTO, passwordHash string) error {
-
-	ter := sql.NullString{}
-	if user.TerOtdelID != "" {
-		ter = sql.NullString{String: user.TerOtdelID, Valid: true}
-	}
-
-	dis := sql.NullString{}
-	if user.DistrictID != "" {
-		dis = sql.NullString{String: user.DistrictID, Valid: true}
-	}
 	query := sq.Insert("users").
-		Columns("full_name", "login", "password_hash", "role_id", "district_id", "ter_otdel_id").
-		Values(user.FullName, user.Login, passwordHash, user.RoleID, dis, ter).
+		Columns("full_name", "login", "password_hash", "role_id", "ter_otdel_id").
+		Values(user.FullName, user.Login, passwordHash, user.RoleID, user.TerOtdelID).
 		PlaceholderFormat(sq.Dollar)
 	sql1, args, err := query.ToSql()
 	if err != nil {
@@ -31,8 +20,9 @@ func (r *Repository) CreateUser(user *dto.CreateUserDTO, passwordHash string) er
 	_, err = r.pg.Exec(context.Background(), sql1, args...)
 	return err
 }
+
 func (r *Repository) GetUsers() ([]*dto.User, error) {
-	query := sq.Select("id", "full_name", "login", "password_hash", "role_id", "district_id", "ter_otdel_id").
+	query := sq.Select("id", "full_name", "login", "password_hash", "role_id", "ter_otdel_id").
 		From("users").
 		PlaceholderFormat(sq.Dollar)
 	sql1, args, err := query.ToSql()
@@ -48,21 +38,17 @@ func (r *Repository) GetUsers() ([]*dto.User, error) {
 
 	var users []*dto.User
 	for rows.Next() {
-		var dis sql.NullString
-		var ter sql.NullString
 		var user dto.User
-		if err := rows.Scan(&user.ID, &user.FullName, &user.Login, &user.PasswordHash, &user.RoleID, &dis, &ter); err != nil {
+		if err := rows.Scan(&user.ID, &user.FullName, &user.Login, &user.PasswordHash, &user.RoleID, &user.TerOtdelID); err != nil {
 			return nil, err
 		}
-		user.TerOtdelID = ter.String
-		user.DistrictID = dis.String
 		users = append(users, &user)
 	}
 	return users, nil
 }
 
 func (r *Repository) GetUserByLogin(login string) (*dto.User, error) {
-	query := sq.Select("id", "full_name", "login", "password_hash", "role_id", "district_id", "ter_otdel_id").
+	query := sq.Select("id", "full_name", "login", "password_hash", "role_id", "ter_otdel_id").
 		From("users").
 		Where(sq.Eq{"login": login}).
 		PlaceholderFormat(sq.Dollar)
@@ -72,21 +58,16 @@ func (r *Repository) GetUserByLogin(login string) (*dto.User, error) {
 	}
 
 	row := r.pg.QueryRow(context.Background(), sql1, args...)
-	var ter sql.NullString
-	var dis sql.NullString
 	var user dto.User
-	if err := row.Scan(&user.ID, &user.FullName, &user.Login, &user.PasswordHash, &user.RoleID, &dis, &ter); err != nil {
+	if err := row.Scan(&user.ID, &user.FullName, &user.Login, &user.PasswordHash, &user.RoleID, &user.TerOtdelID); err != nil {
 		return nil, err
 	}
-	user.TerOtdelID = ter.String
-	user.DistrictID = dis.String
 	return &user, nil
 }
 
 func (r *Repository) GetUserProfile(userID string) (*dto.UserProfile, error) {
-	query := sq.Select("u.id", "u.full_name", "u.login", "u.role_id", "u.district_id", "u.ter_otdel_id", "d.name", "t.name", "r.name").
+	query := sq.Select("u.id", "u.full_name", "u.login", "u.role_id", "u.ter_otdel_id", "t.name", "r.name").
 		From("users u").
-		LeftJoin("districts d ON u.district_id = d.id").
 		LeftJoin("ter_otdels t ON u.ter_otdel_id = t.id").
 		LeftJoin("roles r ON u.role_id = r.id").
 		Where(sq.Eq{"u.id": userID}).
@@ -97,14 +78,10 @@ func (r *Repository) GetUserProfile(userID string) (*dto.UserProfile, error) {
 	}
 
 	row := r.pg.QueryRow(context.Background(), sql1, args...)
-	var terID, terName sql.NullString
-	var disID, disName sql.NullString
 	var user dto.UserProfile
-	if err := row.Scan(&user.ID, &user.FullName, &user.Login, &user.RoleID, &disID, &terID, &disName, &terName, &user.RoleName); err != nil {
+	if err := row.Scan(&user.ID, &user.FullName, &user.Login, &user.RoleID, &user.TerOtdelID, &user.TerOtdelName, &user.RoleName); err != nil {
 		return nil, err
 	}
-	user.TerOtdelID, user.TerOtdelName = terID.String, terName.String
-	user.DistrictID, user.DistrictName = disID.String, disName.String
 	return &user, nil
 }
 

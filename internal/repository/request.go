@@ -45,6 +45,7 @@ func (r *Repository) GetAllRequests(year string) ([]*dto.GetRequestsDTO, error) 
 		From("requests r").
 		LeftJoin("ter_otdels t ON r.ter_otdel_id = t.id").
 		LeftJoin("applicants a ON r.applicant_id = a.id").
+		OrderBy("r.created_at DESC").
 		PlaceholderFormat(sq.Dollar)
 
 	if year != "" {
@@ -82,6 +83,7 @@ func (r *Repository) GetRequestsByTerOtdel(id string, year string) ([]*dto.GetRe
 		LeftJoin("ter_otdels t ON r.ter_otdel_id = t.id").
 		LeftJoin("applicants a ON r.applicant_id = a.id").
 		Where(sq.Eq{"r.ter_otdel_id": id}).
+		OrderBy("r.created_at DESC").
 		PlaceholderFormat(sq.Dollar)
 
 	if year != "" {

@@ -55,8 +55,8 @@ type Service interface {
 	CreateApplicant(applicant *dto.CreateApplicantDTO) error
 
 	CreateRequest(request *dto.CreateRequestDTO) error
-	GetAllRequests() ([]*dto.GetRequestsDTO, error)
-	GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error)
+	GetAllRequests(year string) ([]*dto.GetRequestsDTO, error)
+	GetRequestsByTerOtdel(id string, year string) ([]*dto.GetRequestsDTO, error)
 	GetRequestsByIDs(ids []string) ([]*dto.GetRequestsDTO, error)
 	GetRequestsByTerOtdelIDs(terOtdelID string, ids []string) ([]*dto.GetRequestsDTO, error)
 	ChangeStatusRequest(req *dto.ChangeStatusRequestDTO) error

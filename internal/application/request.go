@@ -20,14 +20,20 @@ import (
 func (h *Handlers) GetRequests(c *gin.Context) {
 	roleID := c.GetString("role")
 	terOtdelID := c.GetString("ter_otdel_id")
+	year := c.Query("year")
 
 	var requests []*dto.GetRequestsDTO
 	var err error
 
 	if roleID == dto.RoleRegionalAdmin {
-		requests, err = h.service.GetAllRequests()
+		otdelID := c.Query("otdel_id")
+		if otdelID != "" {
+			requests, err = h.service.GetRequestsByTerOtdel(otdelID, year)
+		} else {
+			requests, err = h.service.GetAllRequests(year)
+		}
 	} else {
-		requests, err = h.service.GetRequestsByTerOtdel(terOtdelID)
+		requests, err = h.service.GetRequestsByTerOtdel(terOtdelID, year)
 	}
 
 	if err != nil {

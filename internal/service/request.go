@@ -19,8 +19,8 @@ func (s *Service) CreateRequest(request *dto.CreateRequestDTO) error {
 	return s.repository.CreateRequest(request)
 }
 
-func (s *Service) GetAllRequests() ([]*dto.GetRequestsDTO, error) {
-	requests, err := s.repository.GetAllRequests()
+func (s *Service) GetAllRequests(year string) ([]*dto.GetRequestsDTO, error) {
+	requests, err := s.repository.GetAllRequests(year)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +28,8 @@ func (s *Service) GetAllRequests() ([]*dto.GetRequestsDTO, error) {
 	return requests, nil
 }
 
-func (s *Service) GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error) {
-	requests, err := s.repository.GetRequestsByTerOtdel(id)
+func (s *Service) GetRequestsByTerOtdel(id string, year string) ([]*dto.GetRequestsDTO, error) {
+	requests, err := s.repository.GetRequestsByTerOtdel(id, year)
 	if err != nil {
 		return nil, err
 	}

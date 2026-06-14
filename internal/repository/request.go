@@ -40,12 +40,16 @@ func (r *Repository) CreateRequest(request *dto.CreateRequestDTO) error {
 	return err
 }
 
-func (r *Repository) GetAllRequests() ([]*dto.GetRequestsDTO, error) {
+func (r *Repository) GetAllRequests(year string) ([]*dto.GetRequestsDTO, error) {
 	query := sq.Select("r.id", "r.ter_otdel_id", "r.applicant_id", "r.address", "r.dogs_count", "r.behavior", "r.urgency", "r.contact_person", "r.number", "r.act_file", "r.status", "r.created_at", "t.name", "a.full_name", "a.position").
 		From("requests r").
 		LeftJoin("ter_otdels t ON r.ter_otdel_id = t.id").
 		LeftJoin("applicants a ON r.applicant_id = a.id").
 		PlaceholderFormat(sq.Dollar)
+
+	if year != "" {
+		query = query.Where(sq.Eq{"r.year": year})
+	}
 
 	sql1, args, err := query.ToSql()
 	if err != nil {
@@ -72,13 +76,17 @@ func (r *Repository) GetAllRequests() ([]*dto.GetRequestsDTO, error) {
 	return requests, nil
 }
 
-func (r *Repository) GetRequestsByTerOtdel(id string) ([]*dto.GetRequestsDTO, error) {
+func (r *Repository) GetRequestsByTerOtdel(id string, year string) ([]*dto.GetRequestsDTO, error) {
 	query := sq.Select("r.id", "r.ter_otdel_id", "r.applicant_id", "r.address", "r.dogs_count", "r.behavior", "r.urgency", "r.contact_person", "r.number", "r.act_file", "r.status", "r.created_at", "t.name", "a.full_name", "a.position").
 		From("requests r").
 		LeftJoin("ter_otdels t ON r.ter_otdel_id = t.id").
 		LeftJoin("applicants a ON r.applicant_id = a.id").
 		Where(sq.Eq{"r.ter_otdel_id": id}).
 		PlaceholderFormat(sq.Dollar)
+
+	if year != "" {
+		query = query.Where(sq.Eq{"r.year": year})
+	}
 
 	sql1, args, err := query.ToSql()
 	if err != nil {

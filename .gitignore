@@ -37,3 +37,4 @@ sperma.txt
 test/main.py
 test/__pycache__/main.cpython-313.pyc
 zayavka_3.docx
+docker-compose.override.yml
